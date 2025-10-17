@@ -1,0 +1,50 @@
+# Configuración del Software de Optimización Geométrica de Antenas (SOGA)
+
+[physics]
+# Constantes físicas
+speed_of_light = 299792458.0  # Velocidad de la luz en m/s
+
+[simulation]
+# Parámetros de simulación por defecto
+frequency_ghz = 2.4               # Frecuencia de operación en GHz (banda ISM 2.4 GHz - WiFi)
+aperture_efficiency = 0.6         # Eficiencia de apertura típica (0-1)
+areal_density_kg_per_m2 = 1.5    # Densidad areal: reflector + LNB + soporte (kg/m²)
+beamwidth_k_factor = 65.0         # Factor k para cálculo de ancho de haz (IEEE Std 145-2013, típico)
+
+# Parámetros del modelo de eficiencia de apertura vs f/D
+# Basado en literatura (Balanis, Kraus)
+efficiency_peak = 0.70            # Eficiencia máxima alcanzable (típica 65-70%)
+optimal_f_d_ratio = 0.45          # Relación f/D óptima para máxima eficiencia
+curvature_low_fd = 0.128          # Pérdida suave para f/D < óptimo (blockage)
+curvature_high_fd = 0.236         # Pérdida pronunciada para f/D > óptimo (spillover)
+
+[optimization]
+# Parámetros del algoritmo de optimización NSGA-II
+population_size = 40        # Tamaño de la población del algoritmo genético
+max_generations = 80        # Número máximo de generaciones
+seed = 1                    # Semilla para reproducibilidad
+
+[user_defaults]
+# Valores por defecto para parámetros de usuario
+min_diameter_m = 0.1        # Diámetro mínimo de antena (metros)
+max_diameter_m = 2.0        # Diámetro máximo de antena (metros)
+max_payload_g = 1000.0      # Peso máximo permitido (gramos)
+min_f_d_ratio = 0.3         # Relación focal mínima (adimensional)
+max_f_d_ratio = 0.8         # Relación focal máxima (adimensional)
+desired_range_km = 5.0      # Alcance de comunicación deseado (kilómetros)
+
+[regulatory]
+# Límites regulatorios de la Agencia Nacional del Espectro (ANE) de Colombia
+max_eirp_dbm = 36.0         # PIRE máximo permitido en dBm
+
+[realistic_limits]
+# Límites realistas para aplicaciones de drones (UAV)
+# Basados en restricciones prácticas de fabricación, transporte y operación
+min_diameter_m = 0.05       # 5 cm: mínimo práctico para 2.4 GHz
+max_diameter_m = 3.0        # 3 m: máximo transportable/operacional para UAV
+min_payload_g = 10.0        # 10 g: peso mínimo realista con estructura
+max_payload_g = 5000.0      # 5 kg: máximo para drones comerciales típicos
+min_f_d_ratio = 0.2         # Límite físico inferior (parábola profunda)
+max_f_d_ratio = 1.5         # Límite físico superior (parábola muy plana)
+min_range_km = 0.1          # 100 m: rango mínimo útil
+max_range_km = 50.0         # 50 km: límite realista para UAV comerciales
