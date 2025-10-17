@@ -10,6 +10,7 @@ from typing import Any, Dict
 
 from soga.core.models import OptimizationConstraints, OptimizationResult
 from soga.core.optimization import OptimizationEngine
+from soga.core.physics import validate_range_feasibility
 from soga.infrastructure.config import get_config
 
 # Cargar configuración
@@ -267,6 +268,28 @@ class ApplicationFacade:
             max_f_d_ratio=max_f_d_ratio,
             desired_range_km=desired_range_km,
         )
+
+        # Validar viabilidad del link budget (física de comunicaciones RF)
+        # Verifica que el alcance deseado sea físicamente alcanzable con
+        # las restricciones de tamaño de antena dadas
+        is_feasible, error_message, link_result = validate_range_feasibility(
+            min_antenna_diameter_m=min_diameter,
+            max_antenna_diameter_m=max_diameter,
+            desired_range_km=desired_range_km,
+            frequency_ghz=_config.simulation.frequency_ghz,
+            antenna_efficiency=_config.simulation.aperture_efficiency,
+            tx_power_dbm=_config.link_budget.tx_power_dbm,
+            rx_sensitivity_dbm=_config.link_budget.rx_sensitivity_dbm,
+            required_snr_db=_config.link_budget.required_snr_db,
+            fade_margin_db=_config.link_budget.fade_margin_db,
+            implementation_loss_db=_config.link_budget.implementation_loss_db,
+            min_link_margin_db=_config.link_budget.min_link_margin_db,
+        )
+
+        if not is_feasible:
+            raise FacadeValidationError(
+                f"Restricciones físicamente incompatibles:\n\n{error_message}"
+            )
 
         return constraints
 

@@ -33,6 +33,60 @@ min_f_d_ratio = 0.3         # Relación focal mínima (adimensional)
 max_f_d_ratio = 0.8         # Relación focal máxima (adimensional)
 desired_range_km = 5.0      # Alcance de comunicación deseado (kilómetros)
 
+[link_budget]
+# Parámetros de link budget para validación de viabilidad de comunicación
+# Referencias: ITU-R P.525, Friis Transmission Equation
+
+# Parámetros del transmisor (TX)
+tx_power_dbm = 20.0         # Potencia de transmisión típica para UAV: 20 dBm (100 mW)
+                            # Rango típico: 10-30 dBm (10 mW - 1 W)
+                            # Ref: TBS Crossfire (100mW-2W), ExpressLRS (50mW-1W)
+
+# Parámetros del receptor (RX)
+rx_sensitivity_dbm = -95.0  # Sensibilidad del receptor: -95 dBm
+                            # Valores típicos:
+                            # -85 dBm: Receptor básico de video analógico
+                            # -95 dBm: Receptor estándar de telemetría
+                            # -105 dBm: Receptor de alta sensibilidad
+                            # -130 dBm: Receptor excepcional (TBS Crossfire)
+                            # Ref: IEEE 802.15.4, ExpressLRS documentation
+
+rx_noise_figure_db = 6.0    # Figura de ruido del receptor: 6 dB (típico)
+                            # Rango típico: 3-10 dB
+                            # Ref: Analog Devices RF receiver datasheets
+
+# Requerimientos de señal
+required_snr_db = 10.0      # SNR requerido para BER < 10^-3: 10 dB
+                            # Valores según modulación:
+                            # BPSK: 6-8 dB
+                            # QPSK: 8-10 dB (asumido por defecto)
+                            # 16-QAM: 14-16 dB
+                            # Ref: "Digital Communications" Proakis & Salehi, 5th Ed.
+
+# Márgenes de seguridad
+fade_margin_db = 10.0       # Margen de desvanecimiento: 10 dB
+                            # Compensa pérdidas por:
+                            # - Clima (lluvia, niebla): 2-8 dB
+                            # - Vegetación/obstáculos: 3-15 dB
+                            # - Multipath fading: 5-10 dB
+                            # Ref: ITU-R P.530, ITU-R P.833
+
+implementation_loss_db = 3.0 # Pérdidas de implementación: 3 dB
+                            # Incluye:
+                            # - Pérdidas de cable/conectores: 0.5-2 dB
+                            # - Desajuste de polarización: 0.5-3 dB
+                            # - Tolerancias de fabricación: 0.5-1 dB
+                            # Ref: IEEE Std 145-2013
+
+# Factor de validación de viabilidad
+min_link_margin_db = 6.0    # Margen mínimo de link budget para validación: 6 dB
+                            # Un diseño profesional requiere margen positivo
+                            # 0-3 dB: Marginal, poco confiable
+                            # 3-6 dB: Aceptable, mínimo recomendado
+                            # 6-10 dB: Bueno, recomendado para producción
+                            # >10 dB: Excelente, robusto
+                            # Ref: "Wireless Communications Principles and Practice" Rappaport
+
 [regulatory]
 # Límites regulatorios de la Agencia Nacional del Espectro (ANE) de Colombia
 max_eirp_dbm = 36.0         # PIRE máximo permitido en dBm

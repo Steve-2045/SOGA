@@ -115,6 +115,50 @@ class UserDefaultsConfig:
 
 
 @dataclass
+class LinkBudgetConfig:
+    """Parámetros de link budget para validación de comunicación."""
+
+    tx_power_dbm: float
+    rx_sensitivity_dbm: float
+    rx_noise_figure_db: float
+    required_snr_db: float
+    fade_margin_db: float
+    implementation_loss_db: float
+    min_link_margin_db: float
+
+    def __post_init__(self):
+        """Valida que los parámetros de link budget sean correctos."""
+        if self.tx_power_dbm < -100 or self.tx_power_dbm > 60:
+            raise ValueError(
+                f"Potencia TX fuera de rango realista [-100, 60] dBm: {self.tx_power_dbm}"
+            )
+        if self.rx_sensitivity_dbm > -20 or self.rx_sensitivity_dbm < -150:
+            raise ValueError(
+                f"Sensibilidad RX fuera de rango realista [-150, -20] dBm: {self.rx_sensitivity_dbm}"
+            )
+        if self.rx_noise_figure_db < 0 or self.rx_noise_figure_db > 20:
+            raise ValueError(
+                f"Figura de ruido fuera de rango realista [0, 20] dB: {self.rx_noise_figure_db}"
+            )
+        if self.required_snr_db < 0 or self.required_snr_db > 30:
+            raise ValueError(
+                f"SNR requerido fuera de rango realista [0, 30] dB: {self.required_snr_db}"
+            )
+        if self.fade_margin_db < 0 or self.fade_margin_db > 40:
+            raise ValueError(
+                f"Margen de fade fuera de rango realista [0, 40] dB: {self.fade_margin_db}"
+            )
+        if self.implementation_loss_db < 0 or self.implementation_loss_db > 20:
+            raise ValueError(
+                f"Pérdidas de implementación fuera de rango [0, 20] dB: {self.implementation_loss_db}"
+            )
+        if self.min_link_margin_db < 0 or self.min_link_margin_db > 20:
+            raise ValueError(
+                f"Margen mínimo de link fuera de rango [0, 20] dB: {self.min_link_margin_db}"
+            )
+
+
+@dataclass
 class RegulatoryConfig:
     """Límites regulatorios."""
 
@@ -143,6 +187,7 @@ class AppConfig:
     simulation: SimulationConfig
     optimization: OptimizationConfig
     user_defaults: UserDefaultsConfig
+    link_budget: LinkBudgetConfig
     regulatory: RegulatoryConfig
     realistic_limits: RealisticLimitsConfig
 
@@ -262,6 +307,16 @@ class ConfigLoader:
             desired_range_km=data["user_defaults"]["desired_range_km"],
         )
 
+        link_budget = LinkBudgetConfig(
+            tx_power_dbm=data["link_budget"]["tx_power_dbm"],
+            rx_sensitivity_dbm=data["link_budget"]["rx_sensitivity_dbm"],
+            rx_noise_figure_db=data["link_budget"]["rx_noise_figure_db"],
+            required_snr_db=data["link_budget"]["required_snr_db"],
+            fade_margin_db=data["link_budget"]["fade_margin_db"],
+            implementation_loss_db=data["link_budget"]["implementation_loss_db"],
+            min_link_margin_db=data["link_budget"]["min_link_margin_db"],
+        )
+
         regulatory = RegulatoryConfig(max_eirp_dbm=data["regulatory"]["max_eirp_dbm"])
 
         realistic_limits = RealisticLimitsConfig(
@@ -280,6 +335,7 @@ class ConfigLoader:
             simulation=simulation,
             optimization=optimization,
             user_defaults=user_defaults,
+            link_budget=link_budget,
             regulatory=regulatory,
             realistic_limits=realistic_limits,
         )
