@@ -37,41 +37,66 @@
 
 ## 💻 Requisitos
 
-- **Python**: 3.11 o superior
+- **Python**: 3.9 o superior
 - **Sistema Operativo**: Linux, macOS, Windows
 - **RAM**: 512 MB mínimo (2 GB recomendado para optimizaciones grandes)
 
 ---
 
-## 🚀 Instalación
+## 🚀 Inicio Rápido
 
-### 1. Clonar el repositorio
+### Instalación Automática (Recomendado)
 
-\`\`\`bash
-git clone <url-del-repositorio>
-cd Proyecto_Dron
-\`\`\`
+Solo necesitas tener Python instalado. Los scripts de inicio configurarán todo automáticamente.
 
-### 2. Crear entorno virtual
+#### 1. Clonar el repositorio
 
-\`\`\`bash
+```bash
+git clone https://github.com/Steve-2045/SOGA.git
+cd SOGA
+```
+
+#### 2. Ejecutar el dashboard
+
+**En Windows:**
+```bash
+run_dashboard.bat
+```
+
+**En Linux/macOS:**
+```bash
+chmod +x run_dashboard.sh  # Solo la primera vez
+./run_dashboard.sh
+```
+
+¡Eso es todo! El script automáticamente:
+- ✅ Crea el entorno virtual (primera ejecución)
+- ✅ Instala todas las dependencias (primera ejecución)
+- ✅ Lanza el dashboard en http://localhost:8501
+
+En ejecuciones posteriores, simplemente ejecuta el mismo script y se abrirá el dashboard directamente.
+
+---
+
+### Instalación Manual (Avanzado)
+
+Si prefieres instalar manualmente:
+
+```bash
+# 1. Crear entorno virtual
 python3 -m venv venv
+
+# 2. Activar entorno virtual
 source venv/bin/activate  # Linux/macOS
-# o
-venv\\Scripts\\activate     # Windows
-\`\`\`
+venv\Scripts\activate     # Windows
 
-### 3. Instalar dependencias
-
-\`\`\`bash
+# 3. Instalar SOGA y dependencias
 pip install -e .
-\`\`\`
+pip install -r streamlit_app/requirements.txt
 
-### 4. Verificar instalación
-
-\`\`\`bash
+# 4. Verificar instalación
 python -m pytest tests/ -q
-\`\`\`
+```
 
 ---
 
@@ -121,30 +146,17 @@ SOGA incluye una interfaz web interactiva construida con Streamlit.
 
 ### Ejecutar el dashboard
 
-**Método Recomendado** (configura automáticamente las rutas):
-
+**Windows:**
 ```bash
-cd ~/Documents/Proyecto_Dron
-source venv/bin/activate
-python run_dashboard.py
+run_dashboard.bat
 ```
 
-**Método Alternativo** (Bash):
-
+**Linux/macOS:**
 ```bash
 ./run_dashboard.sh
 ```
 
-**Método Manual**:
-
-```bash
-export PYTHONPATH=$PWD:$PYTHONPATH
-streamlit run streamlit_app/app.py
-```
-
-La aplicación se abrirá en `http://localhost:8501`
-
-📖 Para más detalles, consulta [EJECUTAR_DASHBOARD.md](EJECUTAR_DASHBOARD.md)
+La aplicación se abrirá automáticamente en `http://localhost:8501`
 
 ### Características del Dashboard
 
