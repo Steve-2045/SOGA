@@ -14,18 +14,6 @@ Welcome to the SOGA (Software de Optimización Geométrica de Antenas) documenta
 
 - **[COMPONENT_GUIDE.md](COMPONENT_GUIDE.md)** - UI components reference
 
-### Audit & Quality Reports
-
-- **[REPORTE_AUDITORIA_FINAL.md](REPORTE_AUDITORIA_FINAL.md)** - Final audit report
-- **[AUDITORIA_COMPLETA_2025.md](AUDITORIA_COMPLETA_2025.md)** - Complete 2025 audit
-- **[AUDITORIA_PROYECTO.md](AUDITORIA_PROYECTO.md)** - Project audit
-- **[REPORTE_FINAL_VERIFICACION.md](REPORTE_FINAL_VERIFICACION.md)** - Final verification report
-
-### Development History
-
-- **[LIMPIEZA_ARCHIVOS_BASURA.md](LIMPIEZA_ARCHIVOS_BASURA.md)** - File cleanup history
-- **[MEJORAS_IMPLEMENTADAS.md](MEJORAS_IMPLEMENTADAS.md)** - Implemented improvements
-
 ## Quick Links
 
 ### For Users
@@ -55,13 +43,7 @@ docs/
 ├── soga-architecture-guide.md         # Main architecture documentation
 ├── PROJECT_STRUCTURE.md               # Directory structure
 ├── BEST_PRACTICES.md                  # Coding standards
-├── COMPONENT_GUIDE.md                 # UI components
-├── REPORTE_AUDITORIA_FINAL.md        # Quality reports
-├── AUDITORIA_COMPLETA_2025.md        # Audit documentation
-├── AUDITORIA_PROYECTO.md             # Project audit
-├── REPORTE_FINAL_VERIFICACION.md     # Verification
-├── LIMPIEZA_ARCHIVOS_BASURA.md       # Maintenance history
-└── MEJORAS_IMPLEMENTADAS.md          # Change log
+└── COMPONENT_GUIDE.md                 # UI components
 ```
 
 ## Getting Help

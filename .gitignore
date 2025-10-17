@@ -172,6 +172,25 @@ output/
 .archive/
 data/
 notebooks/
+scripts/audit/
+
+# Development documentation (keep only essential docs in docs/)
+AUDITORIA*.md
+*AUDITORIA*.md
+REPORTE*.md
+*REPORTE*.md
+ACTUALIZACION*.md
+CORRECCION*.md
+REORGANIZACION*.md
+DASHBOARD_INSTALADO.md
+QUICK_START*.md
+RESUMEN*.md
+INDICE*.md
+EJEMPLO*.txt
+ESTADISTICAS*.txt
+PRE_GIT_CHECKLIST.md
+LIMPIEZA*.md
+MEJORAS*.md
 
 # Streamlit
 .streamlit/secrets.toml

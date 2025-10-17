@@ -38,7 +38,9 @@ def load_readme() -> str:
 def main() -> None:
     """Main page rendering function."""
     st.title("ℹ️ Acerca de SOGA")
-    st.markdown("Documentación técnica, fundamentos científicos y contexto del proyecto")
+    st.markdown(
+        "Documentación técnica, fundamentos científicos y contexto del proyecto"
+    )
 
     st.markdown("---")
 

@@ -36,7 +36,9 @@ def main() -> None:
     """Main home page rendering function."""
     # Title and header
     st.title("📡 SOGA: Software de Optimización Geométrica de Antenas")
-    st.markdown("### Dashboard Interactivo para Optimización de Antenas Parabólicas en UAVs")
+    st.markdown(
+        "### Dashboard Interactivo para Optimización de Antenas Parabólicas en UAVs"
+    )
 
     st.markdown("---")
 
@@ -89,7 +91,9 @@ def main() -> None:
         st.markdown("### Imagen del Proyecto")
 
         # Try to display the audit image if it exists
-        audit_image_path = project_root / "scripts" / "audit" / "auditoria_eficiencia_vs_fd.png"
+        audit_image_path = (
+            project_root / "scripts" / "audit" / "auditoria_eficiencia_vs_fd.png"
+        )
 
         if audit_image_path.exists():
             st.image(
@@ -106,7 +110,9 @@ def main() -> None:
         st.markdown("### Especificaciones Técnicas")
         st.metric("Frecuencia de Operación", "2.4 GHz", help="Banda ISM estándar")
         st.metric("Rango de Diámetros", "5 cm - 3 m", help="Límites de fabricación")
-        st.metric("Algoritmo", "NSGA-II", help="Non-dominated Sorting Genetic Algorithm II")
+        st.metric(
+            "Algoritmo", "NSGA-II", help="Non-dominated Sorting Genetic Algorithm II"
+        )
 
     # Footer
     st.markdown("---")

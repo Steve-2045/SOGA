@@ -135,12 +135,14 @@ def diagnose_infeasibility(user_parameters: dict, config) -> dict:
     # Diagnosis 1: Weight constraint too restrictive
     if min_weight_g > max_weight_g:
         diagnosis["main_issue"] = "weight_too_low"
-        diagnosis["conflicts"].append({
-            "title": "Peso Máximo Insuficiente",
-            "description": f"Incluso la antena más pequeña ({min_d:.2f}m) pesa ~{min_weight_g:.0f}g, "
-                          f"pero tu límite es {max_weight_g:.0f}g.",
-            "calculation": f"Peso mínimo = π×({min_d:.2f}/2)² × {areal_density} kg/m² = {min_weight_g:.0f}g",
-        })
+        diagnosis["conflicts"].append(
+            {
+                "title": "Peso Máximo Insuficiente",
+                "description": f"Incluso la antena más pequeña ({min_d:.2f}m) pesa ~{min_weight_g:.0f}g, "
+                f"pero tu límite es {max_weight_g:.0f}g.",
+                "calculation": f"Peso mínimo = π×({min_d:.2f}/2)² × {areal_density} kg/m² = {min_weight_g:.0f}g",
+            }
+        )
         diagnosis["suggestions"].append(
             f"Aumentar peso máximo a **{int(min_weight_g * 1.3):.0f}g** o más"
         )
@@ -150,12 +152,14 @@ def diagnose_infeasibility(user_parameters: dict, config) -> dict:
         diagnosis["main_issue"] = "diameter_range_too_large"
         # Calculate feasible max diameter for the weight constraint
         feasible_max_d = 2 * ((max_weight_g / 1000 / areal_density / 3.14159) ** 0.5)
-        diagnosis["conflicts"].append({
-            "title": "Rango de Diámetro Demasiado Amplio para el Peso Permitido",
-            "description": f"Con {max_weight_g:.0f}g, el diámetro máximo factible es ~{feasible_max_d:.2f}m, "
-                          f"pero tu rango llega hasta {max_d:.2f}m.",
-            "calculation": f"D_max_factible = 2×√({max_weight_g/1000:.3f}kg ÷ {areal_density} ÷ π) = {feasible_max_d:.2f}m",
-        })
+        diagnosis["conflicts"].append(
+            {
+                "title": "Rango de Diámetro Demasiado Amplio para el Peso Permitido",
+                "description": f"Con {max_weight_g:.0f}g, el diámetro máximo factible es ~{feasible_max_d:.2f}m, "
+                f"pero tu rango llega hasta {max_d:.2f}m.",
+                "calculation": f"D_max_factible = 2×√({max_weight_g/1000:.3f}kg ÷ {areal_density} ÷ π) = {feasible_max_d:.2f}m",
+            }
+        )
         diagnosis["suggestions"].append(
             f"Reducir diámetro máximo a **{feasible_max_d:.2f}m** o menos"
         )
@@ -167,12 +171,14 @@ def diagnose_infeasibility(user_parameters: dict, config) -> dict:
     fd_range = max_fd - min_fd
     if fd_range < 0.2:
         diagnosis["main_issue"] = "fd_range_too_narrow"
-        diagnosis["conflicts"].append({
-            "title": "Rango f/D Muy Estrecho",
-            "description": f"El rango f/D ({min_fd:.2f} - {max_fd:.2f}) es muy restrictivo. "
-                          f"Esto limita severamente las opciones geométricas.",
-            "calculation": f"Rango actual: {fd_range:.2f} (se recomienda ≥ 0.3)",
-        })
+        diagnosis["conflicts"].append(
+            {
+                "title": "Rango f/D Muy Estrecho",
+                "description": f"El rango f/D ({min_fd:.2f} - {max_fd:.2f}) es muy restrictivo. "
+                f"Esto limita severamente las opciones geométricas.",
+                "calculation": f"Rango actual: {fd_range:.2f} (se recomienda ≥ 0.3)",
+            }
+        )
         diagnosis["suggestions"].append(
             f"Ampliar rango f/D a **{max(0.25, min_fd - 0.1):.2f} - {min(1.2, max_fd + 0.1):.2f}**"
         )
@@ -181,12 +187,14 @@ def diagnose_infeasibility(user_parameters: dict, config) -> dict:
     d_range = max_d - min_d
     if d_range < 0.3:
         diagnosis["main_issue"] = "diameter_range_too_narrow"
-        diagnosis["conflicts"].append({
-            "title": "Rango de Diámetro Muy Estrecho",
-            "description": f"El rango de diámetro ({min_d:.2f}m - {max_d:.2f}m) es muy pequeño. "
-                          f"El algoritmo necesita más flexibilidad.",
-            "calculation": f"Rango actual: {d_range:.2f}m (se recomienda ≥ 0.5m)",
-        })
+        diagnosis["conflicts"].append(
+            {
+                "title": "Rango de Diámetro Muy Estrecho",
+                "description": f"El rango de diámetro ({min_d:.2f}m - {max_d:.2f}m) es muy pequeño. "
+                f"El algoritmo necesita más flexibilidad.",
+                "calculation": f"Rango actual: {d_range:.2f}m (se recomienda ≥ 0.5m)",
+            }
+        )
         diagnosis["suggestions"].append(
             f"Ampliar rango de diámetro a **{max(0.05, min_d * 0.5):.2f}m - {min(3.0, max_d * 1.5):.2f}m**"
         )
@@ -194,29 +202,31 @@ def diagnose_infeasibility(user_parameters: dict, config) -> dict:
     # Diagnosis 5: Extreme range requirement
     if range_km > 20 and max_d < 1.5:
         diagnosis["main_issue"] = "range_vs_size"
-        diagnosis["conflicts"].append({
-            "title": "Alcance Muy Alto para Tamaño de Antena Limitado",
-            "description": f"Para {range_km:.1f} km se necesita alta ganancia, lo que requiere antenas grandes (>1.5m), "
-                          f"pero tu diámetro máximo es {max_d:.2f}m.",
-            "calculation": f"Alcance alto → Ganancia alta → Diámetro grande (tu max: {max_d:.2f}m)",
-        })
+        diagnosis["conflicts"].append(
+            {
+                "title": "Alcance Muy Alto para Tamaño de Antena Limitado",
+                "description": f"Para {range_km:.1f} km se necesita alta ganancia, lo que requiere antenas grandes (>1.5m), "
+                f"pero tu diámetro máximo es {max_d:.2f}m.",
+                "calculation": f"Alcance alto → Ganancia alta → Diámetro grande (tu max: {max_d:.2f}m)",
+            }
+        )
         diagnosis["suggestions"].append(
             f"Reducir alcance deseado a **{range_km * 0.4:.1f} km** para antenas de ~{max_d:.2f}m"
         )
-        diagnosis["suggestions"].append(
-            f"O aumentar diámetro máximo a **2.0m** o más"
-        )
+        diagnosis["suggestions"].append(f"O aumentar diámetro máximo a **2.0m** o más")
 
     # Diagnosis 6: Multiple moderate conflicts (general incompatibility)
     if diagnosis["main_issue"] is None and len(diagnosis["conflicts"]) == 0:
         diagnosis["main_issue"] = "general_incompatibility"
-        diagnosis["conflicts"].append({
-            "title": "Combinación General de Restricciones Incompatible",
-            "description": "Las restricciones son individualmente válidas, pero su combinación no permite "
-                          "ninguna solución viable. El espacio de búsqueda está sobre-restringido.",
-            "calculation": f"Parámetros: D={min_d:.2f}-{max_d:.2f}m, Peso≤{max_weight_g:.0f}g, "
-                          f"f/D={min_fd:.2f}-{max_fd:.2f}, Alcance={range_km:.1f}km",
-        })
+        diagnosis["conflicts"].append(
+            {
+                "title": "Combinación General de Restricciones Incompatible",
+                "description": "Las restricciones son individualmente válidas, pero su combinación no permite "
+                "ninguna solución viable. El espacio de búsqueda está sobre-restringido.",
+                "calculation": f"Parámetros: D={min_d:.2f}-{max_d:.2f}m, Peso≤{max_weight_g:.0f}g, "
+                f"f/D={min_fd:.2f}-{max_fd:.2f}, Alcance={range_km:.1f}km",
+            }
+        )
         diagnosis["suggestions"].append(
             "Relajar **múltiples restricciones simultáneamente**"
         )
@@ -227,7 +237,9 @@ def diagnose_infeasibility(user_parameters: dict, config) -> dict:
     return diagnosis
 
 
-def create_parabola_geometry_plot(diameter_mm: float, focal_length_mm: float, depth_mm: float) -> go.Figure:
+def create_parabola_geometry_plot(
+    diameter_mm: float, focal_length_mm: float, depth_mm: float
+) -> go.Figure:
     """
     Create an interactive 2D plot showing the parabolic antenna geometry.
 
@@ -440,14 +452,18 @@ def export_convergence_to_bytes(convergence_history: list[float]) -> bytes:
 def main() -> None:
     """Main page rendering function."""
     st.title("🚀 Nueva Optimización")
-    st.markdown("Configure los parámetros de diseño y ejecute la optimización multi-objetivo NSGA-II")
+    st.markdown(
+        "Configure los parámetros de diseño y ejecute la optimización multi-objetivo NSGA-II"
+    )
 
     # Load configuration
     config = load_configuration()
 
     # Sidebar - Parameter Controls
     st.sidebar.header("⚙️ Parámetros de Diseño")
-    st.sidebar.markdown("Ajuste los controles para definir el espacio de búsqueda de la optimización.")
+    st.sidebar.markdown(
+        "Ajuste los controles para definir el espacio de búsqueda de la optimización."
+    )
 
     with st.sidebar.form(key="params_form"):
         st.subheader("Restricciones Geométricas")
@@ -557,7 +573,9 @@ def main() -> None:
 
         # Execute optimization
         try:
-            with st.spinner("⚙️ Ejecutando optimización NSGA-II... Esto puede tardar unos segundos."):
+            with st.spinner(
+                "⚙️ Ejecutando optimización NSGA-II... Esto puede tardar unos segundos."
+            ):
                 facade = ApplicationFacade()
                 result = facade.run_optimization(user_parameters)
 
@@ -573,7 +591,9 @@ def main() -> None:
 
             # Check if it's the "no viable solution" error
             if "no encontró ninguna solución viable" in error_message.lower():
-                st.error("❌ **Error de Optimización**: La optimización no encontró ninguna solución viable.")
+                st.error(
+                    "❌ **Error de Optimización**: La optimización no encontró ninguna solución viable."
+                )
 
                 st.warning(
                     """
@@ -592,11 +612,20 @@ def main() -> None:
                 st.markdown("#### 📋 **Parámetros Configurados:**")
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.metric("Diámetro", f"{user_parameters['min_diameter_m']:.2f}m - {user_parameters['max_diameter_m']:.2f}m")
+                    st.metric(
+                        "Diámetro",
+                        f"{user_parameters['min_diameter_m']:.2f}m - {user_parameters['max_diameter_m']:.2f}m",
+                    )
                     st.metric("Peso Máximo", f"{user_parameters['max_payload_g']:.0f}g")
                 with col2:
-                    st.metric("f/D Ratio", f"{user_parameters['min_f_d_ratio']:.2f} - {user_parameters['max_f_d_ratio']:.2f}")
-                    st.metric("Alcance Deseado", f"{user_parameters['desired_range_km']:.1f} km")
+                    st.metric(
+                        "f/D Ratio",
+                        f"{user_parameters['min_f_d_ratio']:.2f} - {user_parameters['max_f_d_ratio']:.2f}",
+                    )
+                    st.metric(
+                        "Alcance Deseado",
+                        f"{user_parameters['desired_range_km']:.1f} km",
+                    )
 
                 st.markdown("---")
 
@@ -604,9 +633,9 @@ def main() -> None:
                 with st.expander("🔴 **Diagnóstico del Problema**", expanded=True):
                     for conflict in diagnosis["conflicts"]:
                         st.markdown(f"### {conflict['title']}")
-                        st.markdown(conflict['description'])
-                        if 'calculation' in conflict:
-                            st.code(conflict['calculation'], language="text")
+                        st.markdown(conflict["description"])
+                        if "calculation" in conflict:
+                            st.code(conflict["calculation"], language="text")
                         st.markdown("---")
 
                 # Show specific suggestions
@@ -681,7 +710,13 @@ def main() -> None:
         st.markdown("---")
 
         # Tabs for detailed results
-        tab1, tab2, tab3 = st.tabs(["📉 Gráfico de Convergencia", "📐 Geometría Detallada", "💾 Guardar y Exportar"])
+        tab1, tab2, tab3 = st.tabs(
+            [
+                "📉 Gráfico de Convergencia",
+                "📐 Geometría Detallada",
+                "💾 Guardar y Exportar",
+            ]
+        )
 
         with tab1:
             st.markdown("#### Evolución del Algoritmo NSGA-II")
@@ -776,7 +811,9 @@ def main() -> None:
 
             # Session save section
             st.markdown("##### 💾 Guardar Sesión Completa")
-            st.markdown("Guarde los parámetros de entrada y resultados en formato JSON para análisis posterior.")
+            st.markdown(
+                "Guarde los parámetros de entrada y resultados en formato JSON para análisis posterior."
+            )
 
             session_data = {
                 "params": st.session_state.user_parameters,
@@ -797,7 +834,9 @@ def main() -> None:
 
             # Convergence export section
             st.markdown("##### 📊 Exportar Historial de Convergencia")
-            st.markdown("Exporte el historial de convergencia en formato CSV para análisis en Excel, Python, etc.")
+            st.markdown(
+                "Exporte el historial de convergencia en formato CSV para análisis en Excel, Python, etc."
+            )
 
             try:
                 convergence_csv = export_convergence_to_bytes(result["convergence"])

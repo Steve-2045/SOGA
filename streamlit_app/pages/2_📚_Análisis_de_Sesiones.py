@@ -66,9 +66,7 @@ def load_session_file(uploaded_file) -> Dict[str, Any]:
         return data
 
     except json.JSONDecodeError as e:
-        raise json.JSONDecodeError(
-            f"Error al parsear JSON: {e.msg}", e.doc, e.pos
-        )
+        raise json.JSONDecodeError(f"Error al parsear JSON: {e.msg}", e.doc, e.pos)
 
 
 def create_comparison_dataframe(sessions: List[Dict[str, Any]]) -> pd.DataFrame:
@@ -140,8 +138,8 @@ def create_comparative_convergence_plot(sessions: List[Dict[str, Any]]) -> go.Fi
                 line={"color": color, "width": 2},
                 marker={"size": 4, "color": color},
                 hovertemplate=f"<b>{session['filename']}</b><br>"
-                              "Generación: %{x}<br>"
-                              "Ganancia: %{y:.2f} dBi<extra></extra>",
+                "Generación: %{x}<br>"
+                "Ganancia: %{y:.2f} dBi<extra></extra>",
             )
         )
 
@@ -201,7 +199,9 @@ def main() -> None:
 
     # Sidebar - File Upload
     st.sidebar.header("📂 Cargar Sesiones")
-    st.sidebar.markdown("Suba uno o más archivos `.json` generados en la página de optimización.")
+    st.sidebar.markdown(
+        "Suba uno o más archivos `.json` generados en la página de optimización."
+    )
 
     uploaded_files = st.sidebar.file_uploader(
         "Seleccionar archivos de sesión",
@@ -218,7 +218,9 @@ def main() -> None:
 
         for uploaded_file in uploaded_files:
             # Check if already loaded
-            existing_filenames = [s["filename"] for s in st.session_state.loaded_sessions]
+            existing_filenames = [
+                s["filename"] for s in st.session_state.loaded_sessions
+            ]
 
             if uploaded_file.name not in existing_filenames:
                 try:
@@ -239,7 +241,9 @@ def main() -> None:
                     st.sidebar.success(f"✅ {uploaded_file.name}")
 
                 except json.JSONDecodeError as e:
-                    st.sidebar.error(f"❌ {uploaded_file.name}: JSON inválido - {e.msg}")
+                    st.sidebar.error(
+                        f"❌ {uploaded_file.name}: JSON inválido - {e.msg}"
+                    )
 
                 except ValueError as e:
                     st.sidebar.error(f"❌ {uploaded_file.name}: {e}")
@@ -321,14 +325,18 @@ def main() -> None:
 
     # Filter sessions based on selection
     filtered_sessions = [
-        s for s in st.session_state.loaded_sessions if s["filename"] in selected_sessions
+        s
+        for s in st.session_state.loaded_sessions
+        if s["filename"] in selected_sessions
     ]
 
     st.markdown(f"**{len(filtered_sessions)} sesión(es) seleccionada(s)**")
     st.markdown("---")
 
     # Tabs for analysis
-    tab1, tab2 = st.tabs(["📊 Comparativa de Métricas", "📉 Comparativa de Convergencia"])
+    tab1, tab2 = st.tabs(
+        ["📊 Comparativa de Métricas", "📉 Comparativa de Convergencia"]
+    )
 
     with tab1:
         st.markdown("#### Tabla Comparativa de Resultados")

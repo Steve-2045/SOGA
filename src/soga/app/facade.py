@@ -76,7 +76,7 @@ class ApplicationFacade:
         """
         if engine is None:
             self._engine = OptimizationEngine()
-        elif hasattr(engine, 'run') and callable(getattr(engine, 'run')):
+        elif hasattr(engine, "run") and callable(getattr(engine, "run")):
             self._engine = engine
         else:
             raise TypeError(
@@ -155,13 +155,14 @@ class ApplicationFacade:
             ValueError: Si los parámetros resultan en restricciones inválidas.
             TypeError: Si los parámetros no son del tipo esperado.
         """
+
         # Función auxiliar para validar y convertir parámetros
         def _validate_and_convert(
             param_name: str,
             default_value: float,
             min_limit: float,
             max_limit: float,
-            unit: str = ""
+            unit: str = "",
         ) -> float:
             """Valida tipo, convierte a float y verifica rangos realistas."""
             raw_value = user_parameters.get(param_name, default_value)
@@ -198,7 +199,7 @@ class ApplicationFacade:
             DEFAULT_USER_PARAMS["min_diameter_m"],
             REALISTIC_LIMITS["min_diameter_m"],
             REALISTIC_LIMITS["max_diameter_m"],
-            "m"
+            "m",
         )
 
         max_diameter = _validate_and_convert(
@@ -206,7 +207,7 @@ class ApplicationFacade:
             DEFAULT_USER_PARAMS["max_diameter_m"],
             REALISTIC_LIMITS["min_diameter_m"],
             REALISTIC_LIMITS["max_diameter_m"],
-            "m"
+            "m",
         )
 
         max_payload_g = _validate_and_convert(
@@ -214,7 +215,7 @@ class ApplicationFacade:
             DEFAULT_USER_PARAMS["max_payload_g"],
             REALISTIC_LIMITS["min_payload_g"],
             REALISTIC_LIMITS["max_payload_g"],
-            "g"
+            "g",
         )
 
         min_f_d_ratio = _validate_and_convert(
@@ -222,7 +223,7 @@ class ApplicationFacade:
             DEFAULT_USER_PARAMS["min_f_d_ratio"],
             REALISTIC_LIMITS["min_f_d_ratio"],
             REALISTIC_LIMITS["max_f_d_ratio"],
-            ""
+            "",
         )
 
         max_f_d_ratio = _validate_and_convert(
@@ -230,7 +231,7 @@ class ApplicationFacade:
             DEFAULT_USER_PARAMS["max_f_d_ratio"],
             REALISTIC_LIMITS["min_f_d_ratio"],
             REALISTIC_LIMITS["max_f_d_ratio"],
-            ""
+            "",
         )
 
         desired_range_km = _validate_and_convert(
@@ -238,7 +239,7 @@ class ApplicationFacade:
             DEFAULT_USER_PARAMS["desired_range_km"],
             REALISTIC_LIMITS["min_range_km"],
             REALISTIC_LIMITS["max_range_km"],
-            "km"
+            "km",
         )
 
         # Validar consistencia de rangos min/max ANTES de crear restricciones
@@ -318,23 +319,26 @@ class ApplicationFacade:
         """
         # Validar que el resultado tenga todos los componentes necesarios
         if result.optimal_geometry is None:
-            raise ValueError("El resultado de optimización no contiene geometría óptima")
+            raise ValueError(
+                "El resultado de optimización no contiene geometría óptima"
+            )
         if result.performance_metrics is None:
-            raise ValueError("El resultado de optimización no contiene métricas de rendimiento")
+            raise ValueError(
+                "El resultado de optimización no contiene métricas de rendimiento"
+            )
 
         return {
             # Dimensiones en mm con precisión de 0.01 mm (10 micrones)
             "optimal_diameter_mm": round(result.optimal_geometry.diameter * 1000, 2),
-            "optimal_focal_length_mm": round(result.optimal_geometry.focal_length * 1000, 2),
+            "optimal_focal_length_mm": round(
+                result.optimal_geometry.focal_length * 1000, 2
+            ),
             "optimal_depth_mm": round(result.optimal_geometry.depth * 1000, 2),
-
             # Relación adimensional con 3 decimales
             "f_d_ratio": round(result.optimal_geometry.f_d_ratio, 3),
-
             # Métricas de rendimiento con precisión apropiada
             "expected_gain_dbi": round(result.performance_metrics.gain, 2),
             "beamwidth_deg": round(result.performance_metrics.beamwidth, 2),
-
             # Historial de convergencia (mantener precisión completa para análisis)
             "convergence": result.convergence_history,
         }

@@ -147,6 +147,7 @@ class LinkBudgetResult:
         link_margin_db: Margen total del link en dB
         is_viable: True si el link es viable (margen >= mínimo)
     """
+
     tx_power_dbm: float
     tx_antenna_gain_dbi: float
     rx_antenna_gain_dbi: float
@@ -160,10 +161,7 @@ class LinkBudgetResult:
     is_viable: bool
 
 
-def calculate_free_space_path_loss(
-    distance_km: float,
-    frequency_ghz: float
-) -> float:
+def calculate_free_space_path_loss(distance_km: float, frequency_ghz: float) -> float:
     """
     Calcula la pérdida de propagación en espacio libre usando la ecuación de Friis.
 
@@ -293,23 +291,41 @@ def calculate_link_budget(
     if rx_antenna_diameter_m <= 0:
         raise ValueError(f"El diámetro RX debe ser positivo: {rx_antenna_diameter_m} m")
     if not (0 < tx_antenna_efficiency <= 1.0):
-        raise ValueError(f"La eficiencia TX debe estar en (0,1]: {tx_antenna_efficiency}")
+        raise ValueError(
+            f"La eficiencia TX debe estar en (0,1]: {tx_antenna_efficiency}"
+        )
     if not (0 < rx_antenna_efficiency <= 1.0):
-        raise ValueError(f"La eficiencia RX debe estar en (0,1]: {rx_antenna_efficiency}")
+        raise ValueError(
+            f"La eficiencia RX debe estar en (0,1]: {rx_antenna_efficiency}"
+        )
     if tx_power_dbm < -100 or tx_power_dbm > 60:
-        raise ValueError(f"Potencia TX fuera de rango realista [-100, 60] dBm: {tx_power_dbm}")
+        raise ValueError(
+            f"Potencia TX fuera de rango realista [-100, 60] dBm: {tx_power_dbm}"
+        )
     if rx_sensitivity_dbm > -20 or rx_sensitivity_dbm < -150:
-        raise ValueError(f"Sensibilidad RX fuera de rango realista [-150, -20] dBm: {rx_sensitivity_dbm}")
+        raise ValueError(
+            f"Sensibilidad RX fuera de rango realista [-150, -20] dBm: {rx_sensitivity_dbm}"
+        )
     if required_snr_db < 0 or required_snr_db > 30:
-        raise ValueError(f"SNR requerido fuera de rango realista [0, 30] dB: {required_snr_db}")
+        raise ValueError(
+            f"SNR requerido fuera de rango realista [0, 30] dB: {required_snr_db}"
+        )
     if fade_margin_db < 0 or fade_margin_db > 40:
-        raise ValueError(f"Margen de fade fuera de rango realista [0, 40] dB: {fade_margin_db}")
+        raise ValueError(
+            f"Margen de fade fuera de rango realista [0, 40] dB: {fade_margin_db}"
+        )
     if implementation_loss_db < 0 or implementation_loss_db > 20:
-        raise ValueError(f"Pérdidas de implementación fuera de rango [0, 20] dB: {implementation_loss_db}")
+        raise ValueError(
+            f"Pérdidas de implementación fuera de rango [0, 20] dB: {implementation_loss_db}"
+        )
 
     # Paso 1: Calcular ganancias de antenas (usando función existente)
-    tx_gain_dbi = calculate_gain(tx_antenna_diameter_m, frequency_ghz, tx_antenna_efficiency)
-    rx_gain_dbi = calculate_gain(rx_antenna_diameter_m, frequency_ghz, rx_antenna_efficiency)
+    tx_gain_dbi = calculate_gain(
+        tx_antenna_diameter_m, frequency_ghz, tx_antenna_efficiency
+    )
+    rx_gain_dbi = calculate_gain(
+        rx_antenna_diameter_m, frequency_ghz, rx_antenna_efficiency
+    )
 
     # Paso 2: Calcular pérdida en espacio libre
     fspl_db = calculate_free_space_path_loss(distance_km, frequency_ghz)
@@ -317,18 +333,16 @@ def calculate_link_budget(
     # Paso 3: Calcular potencia recibida (ecuación de Friis)
     # P_rx = P_tx + G_tx + G_rx - FSPL - L_impl
     rx_power_dbm = (
-        tx_power_dbm
-        + tx_gain_dbi
-        + rx_gain_dbi
-        - fspl_db
-        - implementation_loss_db
+        tx_power_dbm + tx_gain_dbi + rx_gain_dbi - fspl_db - implementation_loss_db
     )
 
     # Paso 4: Calcular margen del link
     # Link Margin = P_rx - (RX_sensitivity + SNR_required + Fade_margin)
     # Si Link Margin > 0, el link es viable
     # Si Link Margin >= min_link_margin_db, el link es robusto/confiable
-    link_margin_db = rx_power_dbm - (rx_sensitivity_dbm + required_snr_db + fade_margin_db)
+    link_margin_db = rx_power_dbm - (
+        rx_sensitivity_dbm + required_snr_db + fade_margin_db
+    )
 
     # Paso 5: Determinar viabilidad
     is_viable = link_margin_db >= min_link_margin_db
@@ -448,7 +462,7 @@ def validate_range_feasibility(
     # FSPL = 20·log₁₀(d) + 20·log₁₀(f) + 92.45
     # => log₁₀(d) = (FSPL - 20·log₁₀(f) - 92.45) / 20
     log10_d_max = (achievable_fspl - 20.0 * np.log10(frequency_ghz) - 92.45) / 20.0
-    achievable_range_km = 10.0 ** log10_d_max
+    achievable_range_km = 10.0**log10_d_max
 
     # Mensaje diagnóstico
     message = (

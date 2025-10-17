@@ -74,8 +74,8 @@ def aperture_efficiency_model(f_d_ratio: np.ndarray) -> np.ndarray:
     # Seleccionar curvatura según si estamos antes o después del óptimo
     curvature = np.where(
         deviation < 0,
-        CURVATURE_LOW_FD,   # f/D < óptimo: pérdida suave (blockage)
-        CURVATURE_HIGH_FD   # f/D > óptimo: pérdida pronunciada (spillover)
+        CURVATURE_LOW_FD,  # f/D < óptimo: pérdida suave (blockage)
+        CURVATURE_HIGH_FD,  # f/D > óptimo: pérdida pronunciada (spillover)
     )
 
     # Calcular eficiencia con modelo cuadrático asimétrico
@@ -90,12 +90,13 @@ def aperture_efficiency_model(f_d_ratio: np.ndarray) -> np.ndarray:
     if np.any(efficiency < min_eff - 0.01) or np.any(efficiency > max_eff + 0.01):
         # Advertencia: el modelo necesita recalibración
         import warnings
+
         warnings.warn(
             f"El modelo de eficiencia produjo valores fuera del rango esperado "
             f"[{min_eff}, {max_eff}]. Esto sugiere que los parámetros del modelo "
             f"necesitan ajuste. Valores: min={np.min(efficiency):.3f}, "
             f"max={np.max(efficiency):.3f}",
-            RuntimeWarning
+            RuntimeWarning,
         )
 
     return np.clip(efficiency, min_eff, max_eff)
@@ -181,10 +182,7 @@ class OptimizationEngine:
     """
 
     def __init__(
-        self,
-        population_size: int = None,
-        max_generations: int = None,
-        seed: int = None
+        self, population_size: int = None, max_generations: int = None, seed: int = None
     ):
         """
         Inicializa el motor de optimización.
@@ -199,17 +197,16 @@ class OptimizationEngine:
         """
         # Cargar valores por defecto desde configuración si no se especifican
         self.population_size = (
-            population_size if population_size is not None
+            population_size
+            if population_size is not None
             else _config.optimization.population_size
         )
         self.max_generations = (
-            max_generations if max_generations is not None
+            max_generations
+            if max_generations is not None
             else _config.optimization.max_generations
         )
-        self.seed = (
-            seed if seed is not None
-            else _config.optimization.seed
-        )
+        self.seed = seed if seed is not None else _config.optimization.seed
 
     def _select_knee_point(self, X: np.ndarray, F: np.ndarray) -> np.ndarray:
         """
@@ -266,7 +263,7 @@ class OptimizationEngine:
         for i, point in enumerate(F_norm):
             point_vec = p1 - point
             # Producto cruz en 2D: |a×b| = |a_x*b_y - a_y*b_x|
-            cross_product = abs(line_vec[0]*point_vec[1] - line_vec[1]*point_vec[0])
+            cross_product = abs(line_vec[0] * point_vec[1] - line_vec[1] * point_vec[0])
             distances[i] = cross_product / line_length
 
         # El knee point es el que tiene máxima distancia perpendicular
@@ -357,10 +354,11 @@ class OptimizationEngine:
                 # Si hay un error al acceder a los datos, registrar advertencia
                 # y continuar sin romper la ejecución
                 import warnings
+
                 warnings.warn(
                     f"Error al extraer historial de convergencia en generación "
                     f"{len(convergence_history)}: {e}. Se omite esta generación.",
-                    RuntimeWarning
+                    RuntimeWarning,
                 )
                 continue
 

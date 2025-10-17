@@ -97,9 +97,7 @@ class OptimizationConfig:
                 f"El número de generaciones debe ser positivo, recibido: {self.max_generations}"
             )
         if self.seed < 0:
-            raise ValueError(
-                f"La semilla debe ser no negativa, recibido: {self.seed}"
-            )
+            raise ValueError(f"La semilla debe ser no negativa, recibido: {self.seed}")
 
 
 @dataclass

@@ -160,13 +160,15 @@ class TestAntennaProblem:
         problem = AntennaProblem(constraints)
 
         # Evaluar 5 soluciones simultáneamente
-        test_solutions = np.array([
-            [0.5, 0.4],
-            [1.0, 0.45],
-            [1.5, 0.5],
-            [2.0, 0.6],
-            [0.2, 0.35],
-        ])
+        test_solutions = np.array(
+            [
+                [0.5, 0.4],
+                [1.0, 0.45],
+                [1.5, 0.5],
+                [2.0, 0.6],
+                [0.2, 0.35],
+            ]
+        )
 
         out = {}
         problem._evaluate(test_solutions, out)
@@ -209,9 +211,7 @@ class TestOptimizationEngine:
 
     def test_engine_initialization_custom(self):
         """El motor debe aceptar parámetros personalizados."""
-        engine = OptimizationEngine(
-            population_size=20, max_generations=50, seed=42
-        )
+        engine = OptimizationEngine(population_size=20, max_generations=50, seed=42)
 
         assert engine.population_size == 20
         assert engine.max_generations == 50
@@ -229,8 +229,16 @@ class TestOptimizationEngine:
         assert isinstance(result.performance_metrics, PerformanceMetrics)
 
         # Verificar que la geometría está dentro de límites
-        assert constraints.min_diameter <= result.optimal_geometry.diameter <= constraints.max_diameter
-        assert constraints.min_f_d_ratio <= result.optimal_geometry.f_d_ratio <= constraints.max_f_d_ratio
+        assert (
+            constraints.min_diameter
+            <= result.optimal_geometry.diameter
+            <= constraints.max_diameter
+        )
+        assert (
+            constraints.min_f_d_ratio
+            <= result.optimal_geometry.f_d_ratio
+            <= constraints.max_f_d_ratio
+        )
 
         # Verificar que las métricas son razonables
         assert result.performance_metrics.gain > 0
@@ -261,8 +269,16 @@ class TestOptimizationEngine:
         assert isinstance(result.optimal_geometry, AntennaGeometry)
 
         # Verificar que cumple las restricciones
-        assert tight_constraints.min_diameter <= result.optimal_geometry.diameter <= tight_constraints.max_diameter
-        assert tight_constraints.min_f_d_ratio <= result.optimal_geometry.f_d_ratio <= tight_constraints.max_f_d_ratio
+        assert (
+            tight_constraints.min_diameter
+            <= result.optimal_geometry.diameter
+            <= tight_constraints.max_diameter
+        )
+        assert (
+            tight_constraints.min_f_d_ratio
+            <= result.optimal_geometry.f_d_ratio
+            <= tight_constraints.max_f_d_ratio
+        )
 
     def test_engine_select_knee_point_single_solution(self):
         """El knee point con una sola solución debe retornar esa solución."""
@@ -280,16 +296,20 @@ class TestOptimizationEngine:
         engine = OptimizationEngine()
 
         # Frente de Pareto simulado: [ganancia negativa, peso]
-        X = np.array([
-            [0.5, 0.4],   # Mejor peso, peor ganancia
-            [1.0, 0.45],  # Balance intermedio (debería ser el knee)
-            [1.5, 0.5],   # Mejor ganancia, peor peso
-        ])
-        F = np.array([
-            [-20.0, 0.3],  # Baja ganancia, bajo peso
-            [-25.0, 1.0],  # Balance medio
-            [-28.0, 2.5],  # Alta ganancia, alto peso
-        ])
+        X = np.array(
+            [
+                [0.5, 0.4],  # Mejor peso, peor ganancia
+                [1.0, 0.45],  # Balance intermedio (debería ser el knee)
+                [1.5, 0.5],  # Mejor ganancia, peor peso
+            ]
+        )
+        F = np.array(
+            [
+                [-20.0, 0.3],  # Baja ganancia, bajo peso
+                [-25.0, 1.0],  # Balance medio
+                [-28.0, 2.5],  # Alta ganancia, alto peso
+            ]
+        )
 
         knee = engine._select_knee_point(X, F)
 
@@ -301,14 +321,18 @@ class TestOptimizationEngine:
         engine = OptimizationEngine()
 
         # Todas las soluciones tienen los mismos valores normalizados
-        X = np.array([
-            [1.0, 0.5],
-            [1.0, 0.5],
-        ])
-        F = np.array([
-            [-25.0, 1.0],
-            [-25.0, 1.0],
-        ])
+        X = np.array(
+            [
+                [1.0, 0.5],
+                [1.0, 0.5],
+            ]
+        )
+        F = np.array(
+            [
+                [-25.0, 1.0],
+                [-25.0, 1.0],
+            ]
+        )
 
         knee = engine._select_knee_point(X, F)
 
