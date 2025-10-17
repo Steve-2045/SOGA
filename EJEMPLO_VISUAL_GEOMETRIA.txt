@@ -1,0 +1,225 @@
+================================================================================
+📐 EJEMPLO VISUAL: GRÁFICO 2D DE GEOMETRÍA PARABÓLICA
+================================================================================
+
+Este es un ejemplo conceptual de cómo se ve el gráfico 2D en el dashboard:
+
+                           Profundidad Axial (mm)
+                                     ↑
+                                     │
+                                     │    ★ F (Punto Focal)
+                                     │   f = 225.0 mm
+                                     │    ↓
+                                400  ├────┼────────────
+                                     │    │
+                                     │    │
+                                300  │    │
+                                     │    │
+                                     │    ●───┐
+                                     │   /    │ h = 69.4 mm
+                                200  │  /     │
+                                     │ /      ↓
+                                     │/
+                                100  ┼────────────────────
+                                     │╲              ╱
+                                     │ ╲            ╱  ← Superficie Parabólica
+                                  0  │  ╲__________╱      (Curva azul/morado)
+                                     │  │          │
+                                     │←─┼─────────→│
+                              -100   │  D = 500.0 mm  ← Apertura (Línea verde)
+                                     │
+                                     └─────┼─────────┼─────┼─────→
+                                        -250      0       250    Distancia Radial (mm)
+
+LEYENDA:
+========
+
+★ = Punto Focal (rojo #f56565)
+    - Marca la posición del punto focal
+    - Ubicado a distancia 'f' del vértice (centro de la parábola)
+    - Es donde convergen las ondas electromagnéticas reflejadas
+
+Curva ╲__╱ = Superficie Parabólica (azul/morado #667eea)
+    - Representa el perfil en corte de la antena
+    - Ecuación: z = x² / (4f)
+    - Relleno semitransparente debajo de la curva
+    - 200 puntos para suavidad perfecta
+
+━━━ = Apertura/Diámetro (verde #48bb78)
+    - Línea discontinua horizontal en z = 0
+    - Marca el diámetro total de la antena
+    - Anotación: D = XXX.X mm
+
+│ (línea vertical punteada) = Profundidad (naranja #ed8936)
+    - Del vértice (centro) a la profundidad máxima
+    - Anotación con flecha: h = XX.X mm
+    - Indica cuán "profunda" o "cóncava" es la parábola
+
+DIMENSIONES MOSTRADAS:
+======================
+
+D (Diámetro):
+  └─ Ubicación: Debajo de la línea de apertura
+  └─ Color: Verde (#48bb78)
+  └─ Ejemplo: "D = 500.0 mm"
+
+h (Profundidad):
+  └─ Ubicación: A la derecha, con flecha apuntando al centro
+  └─ Color: Naranja (#ed8936)
+  └─ Ejemplo: "h = 69.4 mm"
+
+f (Distancia Focal):
+  └─ Ubicación: Cerca del punto focal, con flecha
+  └─ Color: Rojo (#f56565)
+  └─ Ejemplo: "f = 225.0 mm"
+
+EJEMPLO CON VALORES REALES:
+===========================
+
+Para una antena optimizada con:
+  • Diámetro: 500 mm
+  • Distancia focal: 225 mm
+  • f/D ratio: 0.45
+  • Profundidad: 69.44 mm
+
+El gráfico mostraría:
+  1. Parábola desde x=-250mm a x=+250mm
+  2. Profundidad máxima de ~69.4mm en el centro (x=0)
+  3. Punto focal a z=225mm en el eje central
+  4. Todas las dimensiones anotadas automáticamente
+
+INTERACTIVIDAD:
+===============
+
+Cuando pasas el ratón sobre la curva:
+  "x: 125.0 mm
+   z: 34.7 mm"
+
+Cuando haces clic en el punto focal:
+  "Punto Focal
+   z: 225.0 mm"
+
+Botones de control (esquina superior derecha):
+  📷 = Descargar como imagen PNG
+  🔍+ = Zoom in
+  🔍- = Zoom out
+  ↔ = Pan (mover)
+  🏠 = Reset a vista original
+  📊 = Autoscale
+
+COLORES Y TEMA OSCURO:
+======================
+
+Fondo del gráfico: #1a1f2e (gris oscuro)
+Fondo general: #0f1419 (negro azulado)
+Grid: #2d3748 (gris medio)
+Texto: #e2e8f0 (gris claro)
+
+Superficie parabólica: #667eea (morado/azul)
+Apertura: #48bb78 (verde)
+Punto focal: #f56565 (rojo)
+Profundidad: #ed8936 (naranja)
+
+ASPECTO RATIO 1:1:
+==================
+
+El gráfico mantiene una relación de aspecto 1:1, lo que significa que:
+  • 1 mm horizontal = 1 mm vertical en la visualización
+  • La geometría se ve exactamente como es en realidad
+  • No hay distorsión de proporciones
+  • Fiel representación para validación visual
+
+CASOS DE USO VISUAL:
+====================
+
+1. Parábola MUY PROFUNDA (f/D = 0.25):
+
+     ↑ z
+     │    ★ F (muy cerca del vértice)
+     │
+   20│  ╱╲
+     │ ╱  ╲  ← Curva muy empinada
+     │╱    ╲
+   0 ┼──────
+     │←───→ D
+
+   → Observación: Profunda, puede tener problemas de bloqueo
+
+2. Parábola ÓPTIMA (f/D = 0.45):
+
+     ↑ z
+     │    ★ F (posición balanceada)
+     │
+   40│  ╱──╲
+     │ ╱    ╲  ← Curvatura moderada
+     │╱      ╲
+   0 ┼────────
+     │←─────→ D
+
+   → Observación: Balanceada, eficiencia máxima
+
+3. Parábola MUY PLANA (f/D = 0.8):
+
+     ↑ z
+     │       ★ F (muy lejos del vértice)
+     │
+   80│  ╱────╲
+     │ ╱      ╲  ← Curva muy suave
+     │╱        ╲
+   0 ┼──────────
+     │←───────→ D
+
+   → Observación: Plana, puede tener spillover excesivo
+
+COMPARACIÓN VISUAL RÁPIDA:
+==========================
+
+Al ver el gráfico, puedes identificar inmediatamente:
+
+✅ Si la parábola es PROFUNDA → f/D bajo → Posible bloqueo
+✅ Si la parábola es PLANA → f/D alto → Posible spillover
+✅ Si las proporciones son RAZONABLES → f/D ~0.45 → Óptimo
+✅ Si las dimensiones son FABRICABLES → Verificar valores en mm
+
+TIPS DE VISUALIZACIÓN:
+======================
+
+1. Usa ZOOM para inspeccionar detalles del punto focal
+2. Haz HOVER sobre la curva para ver coordenadas exactas
+3. Descarga la IMAGEN para presentaciones o reportes
+4. Compara VISUALMENTE diferentes diseños (screenshots)
+5. Verifica que el punto focal esté DENTRO de la parábola
+
+EJEMPLO DE VALIDACIÓN VISUAL:
+==============================
+
+Pregunta: ¿El diseño es fabricable?
+
+Mira el gráfico:
+  ├─ Profundidad < 100mm para D=500mm? → ✅ Sí, factible
+  ├─ Punto focal accesible? → ✅ Sí, visible en el gráfico
+  ├─ Curvatura razonable? → ✅ Sí, no es extrema
+  └─ Proporciones balanceadas? → ✅ Sí, f/D ~0.45
+
+Conclusión: ✅ Diseño viable para fabricación
+
+================================================================================
+
+RESUMEN VISUAL:
+===============
+
+El gráfico 2D transforma estos números abstractos:
+  optimal_diameter_mm: 500.0
+  optimal_focal_length_mm: 225.0
+  optimal_depth_mm: 69.44
+  f_d_ratio: 0.45
+
+En una imagen clara que muestra:
+  📐 La forma exacta de la parábola
+  📏 Las dimensiones clave anotadas
+  📍 La ubicación del punto focal
+  ✅ La validación visual de proporciones
+
+¡Mucho más intuitivo que solo números! 🎨
+
+================================================================================

@@ -1,0 +1,17 @@
+# SOGA Dashboard Theme Configuration
+# Professional dark theme optimized for scientific data visualization
+
+[theme]
+base = "dark"
+primaryColor = "#667eea"              # Professional purple/blue for primary actions
+backgroundColor = "#0f1419"            # Deep dark background for reduced eye strain
+secondaryBackgroundColor = "#1a1f2e"   # Slightly lighter for panels and cards
+textColor = "#e2e8f0"                  # Light gray for excellent readability
+font = "sans serif"
+
+[server]
+headless = true
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false

@@ -1,0 +1,16 @@
+# SOGA Dashboard Requirements
+# ==============================
+# These are the dependencies required to run the Streamlit dashboard
+
+# Core Streamlit
+streamlit>=1.28.0
+
+# Data visualization
+plotly>=5.18.0
+pandas>=2.1.0
+
+# Backend dependencies (if not already installed)
+# These should be available if you installed the main SOGA package
+# Uncomment if needed:
+# pymoo>=0.6.1
+# numpy>=1.24.0
