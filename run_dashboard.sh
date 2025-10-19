@@ -55,12 +55,20 @@ PYTHON_VERSION=$(python3 --version)
 echo "Python found: $PYTHON_VERSION"
 echo ""
 
-# Check if venv exists
-if [ ! -f "./venv/bin/python" ]; then
+# Function to setup/reinstall venv
+setup_venv() {
     echo "========================================================================"
-    echo "Virtual environment not found - Setting up for first time..."
+    echo "Setting up virtual environment..."
     echo "========================================================================"
     echo ""
+
+    # Remove existing venv if it exists
+    if [ -d "./venv" ]; then
+        echo "Removing existing virtual environment..."
+        rm -rf ./venv
+        echo ""
+    fi
+
     echo "[1/3] Creating virtual environment..."
     python3 -m venv venv
     echo "   > Virtual environment created successfully"
@@ -80,9 +88,46 @@ if [ ! -f "./venv/bin/python" ]; then
     echo "Setup complete! Starting dashboard..."
     echo "========================================================================"
     echo ""
+}
+
+# Check if venv exists and is valid
+if [ ! -f "./venv/bin/python" ]; then
+    # No venv found
+    setup_venv
 else
-    echo "Using existing virtual environment: ./venv"
-    echo ""
+    # Venv exists, check if it's valid
+    if ! ./venv/bin/python -m pip --version &> /dev/null; then
+        # Venv is corrupted (pip doesn't work)
+        echo "Virtual environment is corrupted - recreating..."
+        echo ""
+        setup_venv
+    elif [ ! -f "./venv/bin/streamlit" ]; then
+        # Venv is valid but missing Streamlit
+        echo "Using existing virtual environment: ./venv"
+        echo ""
+        echo "========================================================================"
+        echo "Dependencies missing - Installing now..."
+        echo "========================================================================"
+        echo ""
+        echo "[1/2] Installing SOGA package..."
+        ./venv/bin/python -m pip install --quiet --upgrade pip
+        ./venv/bin/python -m pip install --quiet -e .
+        echo "   > SOGA package installed successfully"
+        echo ""
+
+        echo "[2/2] Installing Streamlit and dashboard dependencies..."
+        ./venv/bin/python -m pip install --quiet -r streamlit_app/requirements.txt
+        echo "   > Dependencies installed successfully"
+        echo ""
+        echo "========================================================================"
+        echo "Setup complete! Starting dashboard..."
+        echo "========================================================================"
+        echo ""
+    else
+        # Everything looks good
+        echo "Using existing virtual environment: ./venv"
+        echo ""
+    fi
 fi
 
 # Set PYTHONPATH to include the project root

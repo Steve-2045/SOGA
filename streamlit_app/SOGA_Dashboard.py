@@ -37,7 +37,7 @@ def main() -> None:
     # Title and header
     st.title("📡 SOGA: Software de Optimización Geométrica de Antenas")
     st.markdown(
-        "### Dashboard Interactivo para Optimización de Antenas Parabólicas en UAVs"
+        "### Optimización de Antenas Parabólicas en UAVs"
     )
 
     st.markdown("---")
@@ -48,10 +48,10 @@ def main() -> None:
     with col1:
         st.markdown(
             """
-            ## Bienvenido al Dashboard de SOGA
+            ## Bienvenido
 
-            **SOGA** es una herramienta avanzada de optimización multi-objetivo que diseña antenas
-            parabólicas de alto rendimiento para aplicaciones de Vehículos Aéreos No Tripulados (UAVs).
+            Herramienta avanzada de optimización multi-objetivo para diseño de antenas
+            parabólicas de alto rendimiento en Vehículos Aéreos No Tripulados (UAVs).
 
             ### Características Principales
 
@@ -69,7 +69,7 @@ def main() -> None:
 
             ### Navegación
 
-            Utilice la **barra lateral izquierda** para navegar entre las páginas del dashboard:
+            Utilice la **barra lateral** para acceder a las diferentes páginas:
 
             - 🚀 **Nueva Optimización**: Configure y ejecute simulaciones de optimización
             - 📚 **Análisis de Sesiones**: Compare y analice múltiples resultados guardados
@@ -79,33 +79,15 @@ def main() -> None:
 
             ### Inicio Rápido
 
-            1. Vaya a la página **🚀 Nueva Optimización**
-            2. Configure los parámetros de diseño usando los controles deslizantes
-            3. Presione **Ejecutar Optimización** y espere los resultados
-            4. Analice los gráficos interactivos y métricas de rendimiento
-            5. Descargue la sesión o exporte los datos para análisis posterior
+            1. Vaya a **🚀 Nueva Optimización**
+            2. Configure los parámetros de diseño
+            3. Ejecute la optimización
+            4. Analice los resultados y métricas de rendimiento
+            5. Descargue o exporte los datos
             """
         )
 
     with col2:
-        st.markdown("### Imagen del Proyecto")
-
-        # Try to display the audit image if it exists
-        audit_image_path = (
-            project_root / "scripts" / "audit" / "auditoria_eficiencia_vs_fd.png"
-        )
-
-        if audit_image_path.exists():
-            st.image(
-                str(audit_image_path),
-                caption="Eficiencia de apertura vs. Relación f/D",
-                use_container_width=True,
-            )
-        else:
-            st.info("Imagen de proyecto no disponible")
-
-        st.markdown("---")
-
         # Quick stats
         st.markdown("### Especificaciones Técnicas")
         st.metric("Frecuencia de Operación", "2.4 GHz", help="Banda ISM estándar")
@@ -119,8 +101,8 @@ def main() -> None:
     st.markdown(
         """
         <div style='text-align: center; color: #667eea;'>
-            <p>SOGA Dashboard v1.0 | Desarrollado con Streamlit y optimización evolutiva NSGA-II</p>
-            <p>📧 Contacto: soporte@soga.dev | 📄 Documentación completa en la página "Acerca del Proyecto"</p>
+            <p>SOGA v1.0 | Desarrollado con Streamlit y optimización evolutiva NSGA-II</p>
+            <p>📧 Contacto: soporte@soga.dev | 📄 Más información en "Acerca del Proyecto"</p>
         </div>
         """,
         unsafe_allow_html=True,

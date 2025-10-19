@@ -173,6 +173,7 @@ output/
 data/
 notebooks/
 scripts/audit/
+test_validations.py
 
 # Development documentation (keep only essential docs in docs/)
 AUDITORIA*.md

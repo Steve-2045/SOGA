@@ -103,12 +103,17 @@ def diagnose_infeasibility(user_parameters: dict, config) -> dict:
         config: Application configuration object
 
     Returns:
-        Dictionary with diagnosis information
+        Dictionary with diagnosis information including:
+        - main_issue: Primary problem identifier
+        - conflicts: List of specific conflicts found
+        - suggestions: Actionable recommendations
+        - severity: How critical each issue is
     """
     diagnosis = {
         "main_issue": None,
         "conflicts": [],
         "suggestions": [],
+        "severity": "unknown",
     }
 
     # Extract parameters
@@ -121,117 +126,294 @@ def diagnose_infeasibility(user_parameters: dict, config) -> dict:
 
     # Get physical constants from config
     areal_density = config.simulation.areal_density_kg_per_m2  # kg/m²
+    frequency_ghz = config.simulation.frequency_ghz
+
+    # Use numpy pi for precision
+    import numpy as np
+    pi = np.pi
 
     # Calculate minimum possible weight with minimum diameter
-    min_area = 3.14159 * (min_d / 2) ** 2
+    min_area = pi * (min_d / 2) ** 2
     min_weight_kg = min_area * areal_density
-    min_weight_g = min_weight_kg * 1000
+    min_weight_g_calc = min_weight_kg * 1000
 
     # Calculate maximum possible weight with maximum diameter
-    max_area = 3.14159 * (max_d / 2) ** 2
+    max_area = pi * (max_d / 2) ** 2
     max_weight_kg = max_area * areal_density
     max_weight_g_calc = max_weight_kg * 1000
 
-    # Diagnosis 1: Weight constraint too restrictive
-    if min_weight_g > max_weight_g:
-        diagnosis["main_issue"] = "weight_too_low"
+    # Calculate weight for mid-range diameter
+    mid_d = (min_d + max_d) / 2
+    mid_area = pi * (mid_d / 2) ** 2
+    mid_weight_g = mid_area * areal_density * 1000
+
+    # --- DIAGNOSIS 1: Weight constraint absolutely impossible ---
+    # The lightest possible antenna (minimum diameter) is heavier than max allowed
+    if min_weight_g_calc > max_weight_g:
+        diagnosis["main_issue"] = "weight_impossible"
+        diagnosis["severity"] = "critical"
+
+        # Calculate what diameter would fit the weight constraint
+        feasible_d = 2 * np.sqrt(max_weight_g / 1000 / areal_density / pi)
+
         diagnosis["conflicts"].append(
             {
-                "title": "Peso Máximo Insuficiente",
-                "description": f"Incluso la antena más pequeña ({min_d:.2f}m) pesa ~{min_weight_g:.0f}g, "
-                f"pero tu límite es {max_weight_g:.0f}g.",
-                "calculation": f"Peso mínimo = π×({min_d:.2f}/2)² × {areal_density} kg/m² = {min_weight_g:.0f}g",
+                "title": "❌ Restricción de Peso Física­mente Imposible",
+                "description": (
+                    f"**Problema crítico**: Incluso la antena MÁS PEQUEÑA de tu rango ({min_d:.3f} m) "
+                    f"pesa aproximadamente **{min_weight_g_calc:.1f} g**, pero tu límite de peso es solo **{max_weight_g:.0f} g**.\n\n"
+                    f"Para que una antena pese {max_weight_g:.0f} g, su diámetro máximo sería **{feasible_d:.3f} m**, "
+                    f"que está **por debajo** de tu diámetro mínimo ({min_d:.3f} m)."
+                ),
+                "calculation": (
+                    f"Peso_mínimo = π × (D_min/2)² × densidad_areal\n"
+                    f"           = π × ({min_d:.3f}/2)² × {areal_density:.3f} kg/m²\n"
+                    f"           = {min_weight_g_calc:.1f} g\n\n"
+                    f"Diámetro factible para {max_weight_g:.0f} g:\n"
+                    f"D_factible = 2 × √({max_weight_g:.0f}g ÷ 1000 ÷ {areal_density:.3f} ÷ π)\n"
+                    f"          = {feasible_d:.3f} m"
+                ),
+                "type": "critical",
             }
         )
-        diagnosis["suggestions"].append(
-            f"Aumentar peso máximo a **{int(min_weight_g * 1.3):.0f}g** o más"
-        )
 
-    # Diagnosis 2: Diameter range too large for weight constraint
-    elif max_weight_g < max_weight_g_calc * 0.5:
-        diagnosis["main_issue"] = "diameter_range_too_large"
-        # Calculate feasible max diameter for the weight constraint
-        feasible_max_d = 2 * ((max_weight_g / 1000 / areal_density / 3.14159) ** 0.5)
+        weight_increase_needed = int(min_weight_g_calc * 1.2)
+        diagnosis["suggestions"].append(
+            f"✅ **SOLUCIÓN 1**: Aumentar peso máximo a **{weight_increase_needed} g** (mínimo: {int(min_weight_g_calc)} g)"
+        )
+        diagnosis["suggestions"].append(
+            f"✅ **SOLUCIÓN 2**: Reducir diámetro mínimo a **{feasible_d:.3f} m** o menos"
+        )
+        diagnosis["suggestions"].append(
+            f"✅ **SOLUCIÓN 3**: Ajustar ambos: Diámetro 0.05-{max_d:.2f} m + Peso {int(mid_weight_g * 1.5)} g"
+        )
+        return diagnosis
+
+    # --- DIAGNOSIS 2: Weight allows only small portion of diameter range ---
+    # The weight constraint cuts off too much of the specified diameter range
+    feasible_max_d = 2 * np.sqrt(max_weight_g / 1000 / areal_density / pi)
+    usable_range_fraction = (feasible_max_d - min_d) / (max_d - min_d) if max_d > min_d else 0
+
+    if feasible_max_d < max_d and usable_range_fraction < 0.3:
+        diagnosis["main_issue"] = "weight_cuts_diameter_range"
+        diagnosis["severity"] = "high"
+
         diagnosis["conflicts"].append(
             {
-                "title": "Rango de Diámetro Demasiado Amplio para el Peso Permitido",
-                "description": f"Con {max_weight_g:.0f}g, el diámetro máximo factible es ~{feasible_max_d:.2f}m, "
-                f"pero tu rango llega hasta {max_d:.2f}m.",
-                "calculation": f"D_max_factible = 2×√({max_weight_g/1000:.3f}kg ÷ {areal_density} ÷ π) = {feasible_max_d:.2f}m",
+                "title": "⚠️ Peso Máximo Incompatible con Rango de Diámetros",
+                "description": (
+                    f"Tu peso máximo ({max_weight_g:.0f} g) permite antenas de hasta **{feasible_max_d:.3f} m**, "
+                    f"pero tu rango de diámetros va hasta **{max_d:.2f} m**.\n\n"
+                    f"Esto significa que **{(1-usable_range_fraction)*100:.0f}% de tu rango de diámetros** "
+                    f"es inaccesible debido a la restricción de peso. El algoritmo tiene muy poco espacio "
+                    f"para optimizar (solo puede usar diámetros entre {min_d:.3f} m y {feasible_max_d:.3f} m)."
+                ),
+                "calculation": (
+                    f"Diámetro máximo factible con {max_weight_g:.0f} g:\n"
+                    f"D_max_factible = 2 × √({max_weight_g:.0f}g ÷ 1000 ÷ {areal_density:.3f} ÷ π)\n"
+                    f"              = {feasible_max_d:.3f} m\n\n"
+                    f"Rango solicitado: {min_d:.3f} m - {max_d:.2f} m ({max_d - min_d:.3f} m)\n"
+                    f"Rango utilizable: {min_d:.3f} m - {feasible_max_d:.3f} m ({max(0, feasible_max_d - min_d):.3f} m)\n"
+                    f"Porcentaje utilizable: {usable_range_fraction*100:.0f}%"
+                ),
+                "type": "high",
             }
         )
+
+        needed_weight = int(max_weight_g_calc * 1.1)
         diagnosis["suggestions"].append(
-            f"Reducir diámetro máximo a **{feasible_max_d:.2f}m** o menos"
+            f"✅ **OPCIÓN A**: Reducir diámetro máximo a **{feasible_max_d:.2f} m** (factible con peso actual)"
         )
         diagnosis["suggestions"].append(
-            f"O aumentar peso máximo a **{int(max_weight_g_calc):.0f}g**"
+            f"✅ **OPCIÓN B**: Aumentar peso máximo a **{needed_weight} g** (para usar rango completo)"
+        )
+        diagnosis["suggestions"].append(
+            f"✅ **OPCIÓN C** (balanceada): Diámetro hasta **{(feasible_max_d + max_d)/2:.2f} m** + Peso **{int((max_weight_g + needed_weight)/2)} g**"
         )
 
-    # Diagnosis 3: f/D range too narrow
+    # --- DIAGNOSIS 3: f/D range too narrow for optimization ---
     fd_range = max_fd - min_fd
-    if fd_range < 0.2:
+    if fd_range < 0.15 and diagnosis["main_issue"] is None:
         diagnosis["main_issue"] = "fd_range_too_narrow"
+        diagnosis["severity"] = "medium"
+
         diagnosis["conflicts"].append(
             {
-                "title": "Rango f/D Muy Estrecho",
-                "description": f"El rango f/D ({min_fd:.2f} - {max_fd:.2f}) es muy restrictivo. "
-                f"Esto limita severamente las opciones geométricas.",
-                "calculation": f"Rango actual: {fd_range:.2f} (se recomienda ≥ 0.3)",
+                "title": "⚠️ Rango f/D Demasiado Estrecho",
+                "description": (
+                    f"Tu rango de relación focal f/D es **{min_fd:.2f} - {max_fd:.2f}** (amplitud: {fd_range:.2f}).\n\n"
+                    f"Esto es muy restrictivo. El algoritmo NSGA-II necesita explorar diferentes geometrías "
+                    f"de parábola (más profundas o más planas) para optimizar el balance ganancia/peso. "
+                    f"Un rango recomendado es al menos **0.3** de amplitud (por ejemplo, 0.3-0.7)."
+                ),
+                "calculation": (
+                    f"Rango actual f/D: {fd_range:.2f}\n"
+                    f"Rango recomendado: ≥ 0.30\n"
+                    f"Flexibilidad: {(fd_range/0.3)*100:.0f}% de lo recomendado"
+                ),
+                "type": "medium",
             }
         )
+
+        suggested_min_fd = max(0.25, min_fd - 0.15)
+        suggested_max_fd = min(1.0, max_fd + 0.15)
         diagnosis["suggestions"].append(
-            f"Ampliar rango f/D a **{max(0.25, min_fd - 0.1):.2f} - {min(1.2, max_fd + 0.1):.2f}**"
+            f"✅ Ampliar rango f/D a **{suggested_min_fd:.2f} - {suggested_max_fd:.2f}** (más flexible)"
+        )
+        diagnosis["suggestions"].append(
+            f"✅ O usar rango estándar: **0.35 - 0.70** (cubre geometrías típicas óptimas)"
         )
 
-    # Diagnosis 4: Diameter range too narrow
+    # --- DIAGNOSIS 4: Diameter range too narrow ---
     d_range = max_d - min_d
-    if d_range < 0.3:
+    if d_range < 0.2 and diagnosis["main_issue"] is None:
         diagnosis["main_issue"] = "diameter_range_too_narrow"
+        diagnosis["severity"] = "medium"
+
         diagnosis["conflicts"].append(
             {
-                "title": "Rango de Diámetro Muy Estrecho",
-                "description": f"El rango de diámetro ({min_d:.2f}m - {max_d:.2f}m) es muy pequeño. "
-                f"El algoritmo necesita más flexibilidad.",
-                "calculation": f"Rango actual: {d_range:.2f}m (se recomienda ≥ 0.5m)",
+                "title": "⚠️ Rango de Diámetro Muy Limitado",
+                "description": (
+                    f"Tu rango de diámetros es **{min_d:.3f} m - {max_d:.2f} m** (amplitud: {d_range:.3f} m).\n\n"
+                    f"Un rango tan estrecho limita la capacidad del algoritmo de encontrar soluciones óptimas. "
+                    f"Se recomienda un rango mínimo de **0.5 m** para permitir exploración efectiva del espacio de diseño."
+                ),
+                "calculation": (
+                    f"Rango actual: {d_range:.3f} m\n"
+                    f"Rango recomendado: ≥ 0.5 m\n"
+                    f"Flexibilidad: {(d_range/0.5)*100:.0f}% de lo recomendado"
+                ),
+                "type": "medium",
             }
-        )
-        diagnosis["suggestions"].append(
-            f"Ampliar rango de diámetro a **{max(0.05, min_d * 0.5):.2f}m - {min(3.0, max_d * 1.5):.2f}m**"
         )
 
-    # Diagnosis 5: Extreme range requirement
-    if range_km > 20 and max_d < 1.5:
-        diagnosis["main_issue"] = "range_vs_size"
-        diagnosis["conflicts"].append(
-            {
-                "title": "Alcance Muy Alto para Tamaño de Antena Limitado",
-                "description": f"Para {range_km:.1f} km se necesita alta ganancia, lo que requiere antenas grandes (>1.5m), "
-                f"pero tu diámetro máximo es {max_d:.2f}m.",
-                "calculation": f"Alcance alto → Ganancia alta → Diámetro grande (tu max: {max_d:.2f}m)",
-            }
-        )
-        diagnosis["suggestions"].append(
-            f"Reducir alcance deseado a **{range_km * 0.4:.1f} km** para antenas de ~{max_d:.2f}m"
-        )
-        diagnosis["suggestions"].append(f"O aumentar diámetro máximo a **2.0m** o más")
+        # Check if we can expand without violating weight
+        suggested_max_d = min(3.0, min_d + 0.8)
+        suggested_weight = int(pi * (suggested_max_d/2)**2 * areal_density * 1000 * 1.2)
 
-    # Diagnosis 6: Multiple moderate conflicts (general incompatibility)
-    if diagnosis["main_issue"] is None and len(diagnosis["conflicts"]) == 0:
-        diagnosis["main_issue"] = "general_incompatibility"
+        if suggested_max_d * 1000 * areal_density * pi / 4 <= max_weight_g / 1000:
+            diagnosis["suggestions"].append(
+                f"✅ Ampliar diámetro máximo a **{suggested_max_d:.2f} m** (compatible con tu peso actual)"
+            )
+        else:
+            diagnosis["suggestions"].append(
+                f"✅ Ampliar diámetro a **{max(0.1, min_d*0.7):.2f} m - {min(3.0, max_d*1.8):.2f} m** + aumentar peso a **{suggested_weight} g**"
+            )
+
+    # --- DIAGNOSIS 5: Range requirement vs antenna size mismatch ---
+    # Estimate required gain for the desired range using simplified link budget
+    # This is approximate but gives users actionable feedback
+    if range_km > 15:
+        # Rough estimate: each 10km requires ~6dBi more gain
+        # Gain scales with (D*f)^2, so gain_dB ≈ 20*log10(D*f_GHz) + K
+        # For 2.4GHz, a 1m dish gives ~27dBi
+
+        # Simple model: gain needed ≈ 20 + 3*range_km (very rough)
+        approx_gain_needed = 20 + 2 * range_km
+
+        # Estimate diameter needed (rough: gain ≈ 20*log10(D*f_GHz*3.54))
+        # Simplified: D_needed ≈ 10^((gain_needed - 7)/20) / f_GHz
+        d_needed_for_range = 10**((approx_gain_needed - 7) / 20) / frequency_ghz
+
+        if d_needed_for_range > max_d * 1.5 and diagnosis["main_issue"] is None:
+            diagnosis["main_issue"] = "range_requires_larger_antenna"
+            diagnosis["severity"] = "high"
+
+            # What range is achievable with current max diameter?
+            max_gain_achievable = 20 * np.log10(max_d * frequency_ghz * 3.54) + 7
+            achievable_range = (max_gain_achievable - 20) / 2
+
+            diagnosis["conflicts"].append(
+                {
+                    "title": "⚠️ Alcance Incompatible con Tamaño de Antena",
+                    "description": (
+                        f"Tu alcance deseado es **{range_km:.1f} km**, lo que requiere alta ganancia.\n\n"
+                        f"Con tu diámetro máximo actual ({max_d:.2f} m), el alcance máximo estimado es "
+                        f"aproximadamente **{achievable_range:.1f} km** en condiciones ideales.\n\n"
+                        f"Para alcanzar {range_km:.1f} km confiablemente, necesitarías una antena de al menos "
+                        f"**{d_needed_for_range:.2f} m** de diámetro."
+                    ),
+                    "calculation": (
+                        f"Estimación de alcance con D={max_d:.2f}m:\n"
+                        f"Ganancia máxima ≈ {max_gain_achievable:.1f} dBi\n"
+                        f"Alcance estimado ≈ {achievable_range:.1f} km\n\n"
+                        f"Para {range_km:.1f} km:\n"
+                        f"Ganancia requerida ≈ {approx_gain_needed:.1f} dBi\n"
+                        f"Diámetro necesario ≈ {d_needed_for_range:.2f} m"
+                    ),
+                    "type": "high",
+                }
+            )
+
+            diagnosis["suggestions"].append(
+                f"✅ **OPCIÓN 1**: Reducir alcance objetivo a **{achievable_range:.1f} km** (factible con D={max_d:.2f}m)"
+            )
+            diagnosis["suggestions"].append(
+                f"✅ **OPCIÓN 2**: Aumentar diámetro máximo a **{d_needed_for_range:.1f} m** o más"
+            )
+            diagnosis["suggestions"].append(
+                f"✅ **OPCIÓN 3**: Balance intermedio: Alcance **{(range_km + achievable_range)/2:.1f} km** + Diámetro hasta **{(max_d + d_needed_for_range)/2:.1f} m**"
+            )
+
+    # --- DIAGNOSIS 6: General over-constrained problem ---
+    # Multiple moderate issues combine to make problem infeasible
+    if diagnosis["main_issue"] is None:
+        diagnosis["main_issue"] = "general_over_constrained"
+        diagnosis["severity"] = "medium"
+
+        # Calculate "constraint tightness" metrics
+        weight_tightness = max_weight_g / max_weight_g_calc  # closer to 0 = tighter
+        d_range_adequacy = d_range / 1.0  # compared to 1m ideal range
+        fd_range_adequacy = fd_range / 0.4  # compared to 0.4 ideal range
+
         diagnosis["conflicts"].append(
             {
-                "title": "Combinación General de Restricciones Incompatible",
-                "description": "Las restricciones son individualmente válidas, pero su combinación no permite "
-                "ninguna solución viable. El espacio de búsqueda está sobre-restringido.",
-                "calculation": f"Parámetros: D={min_d:.2f}-{max_d:.2f}m, Peso≤{max_weight_g:.0f}g, "
-                f"f/D={min_fd:.2f}-{max_fd:.2f}, Alcance={range_km:.1f}km",
+                "title": "⚠️ Espacio de Búsqueda Sobre-Restringido",
+                "description": (
+                    f"Tus restricciones son individualmente válidas, pero en conjunto crean un espacio "
+                    f"de búsqueda muy limitado para el algoritmo genético NSGA-II.\n\n"
+                    f"**Análisis de restricciones**:\n"
+                    f"- Peso: {max_weight_g:.0f}g (holgura: {weight_tightness*100:.0f}% del máximo posible)\n"
+                    f"- Rango de diámetro: {d_range:.3f}m (adecuación: {d_range_adequacy*100:.0f}% de lo ideal)\n"
+                    f"- Rango f/D: {fd_range:.2f} (adecuación: {fd_range_adequacy*100:.0f}% de lo ideal)\n\n"
+                    f"El algoritmo necesita más libertad en al menos 2 de estas dimensiones para encontrar "
+                    f"soluciones óptimas en el frente de Pareto."
+                ),
+                "calculation": (
+                    f"Configuración actual:\n"
+                    f"  • Diámetro: {min_d:.3f} - {max_d:.2f} m\n"
+                    f"  • Peso: ≤ {max_weight_g:.0f} g\n"
+                    f"  • f/D: {min_fd:.2f} - {max_fd:.2f}\n"
+                    f"  • Alcance: {range_km:.1f} km\n\n"
+                    f"Métricas de restricción:\n"
+                    f"  • Holgura de peso: {weight_tightness*100:.0f}%\n"
+                    f"  • Flexibilidad diámetro: {d_range_adequacy*100:.0f}%\n"
+                    f"  • Flexibilidad f/D: {fd_range_adequacy*100:.0f}%"
+                ),
+                "type": "medium",
             }
         )
+
+        # Provide a relaxed configuration
+        relaxed_max_d = min(3.0, max_d * 1.4)
+        relaxed_weight = int(pi * (relaxed_max_d/2)**2 * areal_density * 1000 * 1.2)
+        relaxed_min_fd = max(0.25, min_fd - 0.1)
+        relaxed_max_fd = min(1.0, max_fd + 0.1)
+
         diagnosis["suggestions"].append(
-            "Relajar **múltiples restricciones simultáneamente**"
+            "✅ **SOLUCIÓN**: Relajar múltiples restricciones simultáneamente para dar espacio al algoritmo:"
         )
         diagnosis["suggestions"].append(
-            f"Ejemplo: Peso→**{int(max_weight_g * 2):.0f}g**, f/D→**0.3-0.8**, D→**{min_d * 0.7:.2f}-{max_d * 1.3:.2f}m**"
+            f"   • Diámetro: **{min_d:.2f} - {relaxed_max_d:.2f} m** (más rango)"
+        )
+        diagnosis["suggestions"].append(
+            f"   • Peso: **{relaxed_weight} g** (más holgura)"
+        )
+        diagnosis["suggestions"].append(
+            f"   • f/D: **{relaxed_min_fd:.2f} - {relaxed_max_fd:.2f}** (más flexibilidad geométrica)"
+        )
+        diagnosis["suggestions"].append(
+            f"   • Alcance: **{range_km * 0.8:.1f} km** (más realista) o mantener {range_km:.1f} km si aumentas el diámetro"
         )
 
     return diagnosis
@@ -449,6 +631,175 @@ def export_convergence_to_bytes(convergence_history: list[float]) -> bytes:
             temp_path.unlink()
 
 
+def validate_user_inputs(user_parameters: dict, config) -> tuple[bool, list[str], list[str]]:
+    """
+    Valida los parámetros del usuario antes de ejecutar la optimización.
+
+    Realiza validaciones de sentido común, consistencia física, y detecta
+    problemas obvios que harían que la optimización falle.
+
+    Args:
+        user_parameters: Parámetros proporcionados por el usuario
+        config: Configuración de la aplicación
+
+    Returns:
+        Tuple de (es_válido, lista_errores, lista_advertencias)
+        - es_válido: True si pasa todas las validaciones críticas
+        - lista_errores: Lista de errores críticos que bloquean la ejecución
+        - lista_advertencias: Lista de advertencias que no bloquean pero sugieren problemas
+    """
+    errors = []
+    warnings_list = []
+
+    # Extraer parámetros
+    min_d = user_parameters["min_diameter_m"]
+    max_d = user_parameters["max_diameter_m"]
+    max_weight_g = user_parameters["max_payload_g"]
+    min_fd = user_parameters["min_f_d_ratio"]
+    max_fd = user_parameters["max_f_d_ratio"]
+    range_km = user_parameters["desired_range_km"]
+
+    # --- VALIDACIÓN 1: Rangos lógicos (min <= max) ---
+    if min_d >= max_d:
+        errors.append(
+            f"**Diámetro inválido**: El diámetro mínimo ({min_d:.3f} m) debe ser "
+            f"**menor** que el máximo ({max_d:.3f} m). Por favor, ajuste los valores."
+        )
+
+    if min_fd >= max_fd:
+        errors.append(
+            f"**Relación f/D inválida**: El valor mínimo ({min_fd:.2f}) debe ser "
+            f"**menor** que el máximo ({max_fd:.2f}). Por favor, ajuste los valores."
+        )
+
+    # --- VALIDACIÓN 2: Valores positivos ---
+    if min_d <= 0 or max_d <= 0:
+        errors.append(
+            f"**Diámetro inválido**: Los diámetros deben ser **positivos**. "
+            f"Valores actuales: mín={min_d:.3f} m, máx={max_d:.3f} m"
+        )
+
+    if max_weight_g <= 0:
+        errors.append(
+            f"**Peso inválido**: El peso máximo debe ser **positivo**. "
+            f"Valor actual: {max_weight_g:.0f} g"
+        )
+
+    if min_fd <= 0 or max_fd <= 0:
+        errors.append(
+            f"**Relación f/D inválida**: Los valores f/D deben ser **positivos**. "
+            f"Valores actuales: mín={min_fd:.2f}, máx={max_fd:.2f}"
+        )
+
+    # Si hay errores básicos, no continuar con validaciones físicas
+    if errors:
+        return False, errors, warnings_list
+
+    # --- VALIDACIÓN 3: Peso vs Diámetro (física básica) ---
+    import numpy as np
+    pi = np.pi
+    areal_density = config.simulation.areal_density_kg_per_m2
+
+    # Peso mínimo posible con el diámetro mínimo
+    min_area = pi * (min_d / 2) ** 2
+    min_possible_weight_g = min_area * areal_density * 1000
+
+    if min_possible_weight_g > max_weight_g:
+        # ERROR CRÍTICO: Imposible físicamente
+        feasible_d = 2 * np.sqrt(max_weight_g / 1000 / areal_density / pi)
+        errors.append(
+            f"**Restricción de peso físicamente imposible**: La antena más pequeña "
+            f"que puedes crear ({min_d:.3f} m) pesaría **{min_possible_weight_g:.1f} g**, "
+            f"pero tu límite de peso es solo **{max_weight_g:.0f} g**.\n\n"
+            f"💡 **Solución**: Reduce el diámetro mínimo a **{feasible_d:.3f} m** o menos, "
+            f"O aumenta el peso máximo a **{int(min_possible_weight_g * 1.2)} g** o más."
+        )
+
+    # Peso máximo posible con el diámetro máximo
+    max_area = pi * (max_d / 2) ** 2
+    max_possible_weight_g = max_area * areal_density * 1000
+
+    # Si el peso máximo permite menos del 30% del rango de diámetros
+    feasible_max_d = 2 * np.sqrt(max_weight_g / 1000 / areal_density / pi)
+    if feasible_max_d < max_d:
+        usable_range_fraction = (feasible_max_d - min_d) / (max_d - min_d)
+
+        if usable_range_fraction < 0.3:
+            errors.append(
+                f"**Peso incompatible con rango de diámetros**: Tu peso máximo ({max_weight_g:.0f} g) "
+                f"solo permite antenas de hasta **{feasible_max_d:.3f} m**, pero tu rango "
+                f"va hasta **{max_d:.2f} m**. Esto significa que **{(1-usable_range_fraction)*100:.0f}%** "
+                f"de tu rango de diámetros es inaccesible.\n\n"
+                f"💡 **Solución**: Reduce el diámetro máximo a **{feasible_max_d:.2f} m**, "
+                f"O aumenta el peso máximo a **{int(max_possible_weight_g * 1.1)} g**."
+            )
+        elif usable_range_fraction < 0.7:
+            warnings_list.append(
+                f"⚠️ **Rango de diámetros parcialmente bloqueado**: El peso máximo "
+                f"limita el uso de **{(1-usable_range_fraction)*100:.0f}%** del rango "
+                f"de diámetros. El algoritmo solo puede explorar hasta {feasible_max_d:.3f} m "
+                f"en lugar de {max_d:.2f} m."
+            )
+
+    # --- VALIDACIÓN 4: Rangos demasiado estrechos ---
+    d_range = max_d - min_d
+    fd_range = max_fd - min_fd
+
+    if d_range < 0.1:
+        warnings_list.append(
+            f"⚠️ **Rango de diámetro muy estrecho**: Tu rango es solo {d_range:.3f} m. "
+            f"Se recomienda al menos 0.5 m para permitir una optimización efectiva. "
+            f"Considera ampliar a {min_d:.2f} - {min_d + 0.8:.2f} m."
+        )
+
+    if fd_range < 0.15:
+        warnings_list.append(
+            f"⚠️ **Rango f/D muy limitado**: Tu rango es solo {fd_range:.2f}. "
+            f"Se recomienda al menos 0.30 para explorar diferentes geometrías de parábola. "
+            f"Considera usar 0.35 - 0.70 (rango estándar)."
+        )
+
+    # --- VALIDACIÓN 5: Alcance vs tamaño de antena ---
+    if range_km > 15:
+        # Estimación aproximada de ganancia necesaria
+        approx_gain_needed = 20 + 2 * range_km
+        frequency_ghz = config.simulation.frequency_ghz
+        d_needed_for_range = 10**((approx_gain_needed - 7) / 20) / frequency_ghz
+
+        if d_needed_for_range > max_d * 1.5:
+            max_gain_achievable = 20 * np.log10(max_d * frequency_ghz * 3.54) + 7
+            achievable_range = (max_gain_achievable - 20) / 2
+
+            warnings_list.append(
+                f"⚠️ **Alcance muy ambicioso**: Para {range_km:.1f} km se necesita "
+                f"una antena de ~{d_needed_for_range:.2f} m, pero tu máximo es {max_d:.2f} m. "
+                f"El alcance real estimado será ~{achievable_range:.1f} km. "
+                f"Considera reducir el alcance objetivo o aumentar el diámetro máximo."
+            )
+
+    # --- VALIDACIÓN 6: Valores fuera de rangos realistas ---
+    realistic_limits = config.realistic_limits
+
+    if max_d > realistic_limits.max_diameter_m:
+        warnings_list.append(
+            f"⚠️ **Diámetro inusualmente grande**: {max_d:.2f} m excede el límite "
+            f"realista de {realistic_limits.max_diameter_m:.2f} m para UAVs. "
+            f"La optimización continuará, pero verifica que sea intencional."
+        )
+
+    if min_d < realistic_limits.min_diameter_m:
+        warnings_list.append(
+            f"⚠️ **Diámetro muy pequeño**: {min_d:.3f} m es menor que el mínimo "
+            f"práctico de {realistic_limits.min_diameter_m:.3f} m. "
+            f"Antenas tan pequeñas tendrán ganancia muy baja."
+        )
+
+    # Validar que hay espacio de búsqueda viable
+    is_valid = len(errors) == 0
+
+    return is_valid, errors, warnings_list
+
+
 def main() -> None:
     """Main page rendering function."""
     st.title("🚀 Nueva Optimización")
@@ -481,6 +832,13 @@ def main() -> None:
             help="Diámetro mínimo y máximo de la antena parabólica en metros",
         )
 
+        # Quick validation feedback for diameter
+        d_range = diameter_range[1] - diameter_range[0]
+        if d_range < 0.1:
+            st.caption("⚠️ Rango muy estrecho. Recomendado: ≥ 0.5 m")
+        elif d_range >= 0.5:
+            st.caption("✅ Rango adecuado para optimización")
+
         # f/D ratio range slider
         fd_range = st.slider(
             "Rango de Relación f/D",
@@ -494,6 +852,13 @@ def main() -> None:
             help="Relación focal/diámetro: determina la profundidad de la parábola",
         )
 
+        # Quick validation feedback for f/D
+        fd_range_width = fd_range[1] - fd_range[0]
+        if fd_range_width < 0.15:
+            st.caption("⚠️ Rango muy limitado. Recomendado: ≥ 0.30")
+        elif fd_range_width >= 0.30:
+            st.caption("✅ Rango adecuado para exploración")
+
         st.subheader("Restricciones de Operación")
 
         # Max payload slider
@@ -506,6 +871,25 @@ def main() -> None:
             help="Peso máximo que el UAV puede transportar (incluyendo antena y estructura)",
         )
 
+        # Quick validation: check if weight is compatible with diameter
+        import numpy as np
+        pi = np.pi
+        areal_density = config.simulation.areal_density_kg_per_m2
+        min_possible_weight_g = pi * (diameter_range[0] / 2) ** 2 * areal_density * 1000
+
+        if min_possible_weight_g > max_payload:
+            st.caption(
+                f"❌ Peso muy bajo: mínimo necesario ~{int(min_possible_weight_g)} g"
+            )
+        else:
+            feasible_max_d = 2 * np.sqrt(max_payload / 1000 / areal_density / pi)
+            if feasible_max_d < diameter_range[1]:
+                st.caption(
+                    f"⚠️ Peso limita diámetro a ~{feasible_max_d:.2f} m"
+                )
+            else:
+                st.caption(f"✅ Peso compatible con rango de diámetros")
+
         # Desired range slider
         desired_range = st.slider(
             "Alcance Deseado (km)",
@@ -515,6 +899,16 @@ def main() -> None:
             step=0.5,
             help="Distancia de comunicación deseada (informativo, no restringe la optimización)",
         )
+
+        # Quick validation: check if range is realistic for antenna size
+        if desired_range > 15:
+            approx_gain_needed = 20 + 2 * desired_range
+            frequency_ghz = config.simulation.frequency_ghz
+            d_needed = 10**((approx_gain_needed - 7) / 20) / frequency_ghz
+            if d_needed > diameter_range[1] * 1.3:
+                st.caption(
+                    f"⚠️ Alcance ambicioso: se recomienda D ≥ {d_needed:.2f} m"
+                )
 
         # Submit button
         submit_button = st.form_submit_button(
@@ -571,6 +965,46 @@ def main() -> None:
         # Store parameters in session state
         st.session_state.user_parameters = user_parameters
 
+        # --- VALIDACIÓN PREVIA: Verificar parámetros antes de ejecutar ---
+        is_valid, validation_errors, validation_warnings = validate_user_inputs(
+            user_parameters, config
+        )
+
+        # Mostrar advertencias (no bloquean la ejecución)
+        if validation_warnings:
+            st.warning("### ⚠️ Advertencias de Configuración")
+            for warning in validation_warnings:
+                st.markdown(f"- {warning}")
+            st.markdown("---")
+            st.info(
+                "💡 **Nota**: Estas son advertencias, no errores. La optimización "
+                "puede continuar, pero los resultados podrían no ser óptimos. "
+                "Considera ajustar los parámetros según las sugerencias."
+            )
+
+        # Mostrar errores críticos (bloquean la ejecución)
+        if not is_valid:
+            st.error("### 🚫 Errores de Validación")
+            st.markdown(
+                "Se encontraron errores **críticos** en tu configuración que deben "
+                "corregirse antes de ejecutar la optimización:"
+            )
+
+            for idx, error in enumerate(validation_errors, 1):
+                st.markdown(f"{idx}. {error}")
+
+            st.markdown("---")
+            st.info(
+                "🔧 **Cómo solucionar**: Ajusta los controles en la barra lateral "
+                "según las soluciones sugeridas arriba, y luego presiona '🛰️ Ejecutar Optimización' nuevamente."
+            )
+
+            # Mostrar configuración actual para referencia
+            with st.expander("📋 Ver Configuración Actual (para depuración)"):
+                st.json(user_parameters)
+
+            st.stop()  # Detener ejecución aquí
+
         # Execute optimization
         try:
             with st.spinner(
@@ -583,7 +1017,14 @@ def main() -> None:
             st.session_state.result = result
 
         except FacadeValidationError as e:
-            st.error(f"❌ **Error de Validación**: {e}")
+            st.error("### ❌ Error de Validación del Sistema")
+            st.markdown(
+                f"El sistema detectó un problema con los parámetros:\n\n**{e}**"
+            )
+            st.info(
+                "💡 Este error indica un problema interno en la configuración. "
+                "Por favor, verifica los valores en la barra lateral."
+            )
             st.stop()
 
         except RuntimeError as e:
@@ -592,71 +1033,149 @@ def main() -> None:
             # Check if it's the "no viable solution" error
             if "no encontró ninguna solución viable" in error_message.lower():
                 st.error(
-                    "❌ **Error de Optimización**: La optimización no encontró ninguna solución viable."
+                    "### 🚫 La Optimización No Encontró Soluciones Viables"
                 )
-
-                st.warning(
+                st.markdown(
                     """
-                    ### 🔍 **¿Por qué sucede esto?**
+                    El algoritmo NSGA-II ejecutó **todas las generaciones** pero no logró
+                    encontrar **ninguna configuración de antena** que satisfaga tus restricciones.
 
-                    Las restricciones de diseño que configuraste son **físicamente incompatibles**.
-                    El algoritmo NSGA-II intentó encontrar una antena que cumpla TODAS las restricciones
-                    simultáneamente, pero no existe ninguna geometría que lo logre.
+                    **¿Qué significa esto?**
+
+                    Tus restricciones de diseño son **demasiado restrictivas** o **incompatibles entre sí**.
+                    El espacio de búsqueda está sobre-restringido y el algoritmo no tiene suficiente
+                    libertad para encontrar soluciones óptimas.
                     """
                 )
 
                 # Diagnose the specific problem
                 diagnosis = diagnose_infeasibility(user_parameters, config)
 
-                # Show parameters
-                st.markdown("#### 📋 **Parámetros Configurados:**")
-                col1, col2 = st.columns(2)
+                # Show error with severity-based styling
+                severity_icons = {
+                    "critical": "🔴",
+                    "high": "🟠",
+                    "medium": "🟡",
+                    "unknown": "⚠️",
+                }
+
+                icon = severity_icons.get(diagnosis["severity"], "⚠️")
+
+                st.markdown(f"---")
+                st.markdown(f"## {icon} Diagnóstico del Problema")
+
+                # Explanation box
+                if diagnosis["severity"] == "critical":
+                    st.warning(
+                        """
+                        ### 🔍 **Problema Físicamente Imposible**
+
+                        Una o más de tus restricciones son **matemáticamente imposibles de satisfacer**.
+                        No es un problema del algoritmo, sino que la física no permite que exista
+                        una antena con esas características.
+                        """
+                    )
+                else:
+                    st.warning(
+                        """
+                        ### 🔍 **¿Por qué no se encontró solución?**
+
+                        Las restricciones de diseño que configuraste crean un espacio de búsqueda
+                        demasiado limitado. El algoritmo NSGA-II necesita más flexibilidad para
+                        encontrar soluciones óptimas en el frente de Pareto.
+                        """
+                    )
+
+                # Show parameters in a cleaner format
+                st.markdown("#### 📋 **Tu Configuración Actual:**")
+                col1, col2, col3 = st.columns(3)
                 with col1:
                     st.metric(
-                        "Diámetro",
-                        f"{user_parameters['min_diameter_m']:.2f}m - {user_parameters['max_diameter_m']:.2f}m",
+                        "Diámetro (m)",
+                        f"{user_parameters['min_diameter_m']:.2f} - {user_parameters['max_diameter_m']:.2f}",
+                        delta=f"Δ {user_parameters['max_diameter_m'] - user_parameters['min_diameter_m']:.2f}m",
                     )
-                    st.metric("Peso Máximo", f"{user_parameters['max_payload_g']:.0f}g")
+                    st.metric("Peso Máximo", f"{user_parameters['max_payload_g']:.0f} g")
                 with col2:
                     st.metric(
-                        "f/D Ratio",
+                        "Relación f/D",
                         f"{user_parameters['min_f_d_ratio']:.2f} - {user_parameters['max_f_d_ratio']:.2f}",
+                        delta=f"Δ {user_parameters['max_f_d_ratio'] - user_parameters['min_f_d_ratio']:.2f}",
                     )
+                    st.metric("Alcance Deseado", f"{user_parameters['desired_range_km']:.1f} km")
+                with col3:
+                    # Show constraint tightness
+                    import numpy as np
+                    pi = np.pi
+                    areal_density = config.simulation.areal_density_kg_per_m2
+                    max_possible_weight = (
+                        pi
+                        * (user_parameters["max_diameter_m"] / 2) ** 2
+                        * areal_density
+                        * 1000
+                    )
+                    weight_utilization = (
+                        user_parameters["max_payload_g"] / max_possible_weight * 100
+                    )
+
                     st.metric(
-                        "Alcance Deseado",
-                        f"{user_parameters['desired_range_km']:.1f} km",
+                        "Holgura de Peso",
+                        f"{weight_utilization:.0f}%",
+                        delta="del máximo posible" if weight_utilization < 100 else "Excede límite",
+                        delta_color="normal" if weight_utilization < 100 else "inverse",
                     )
 
                 st.markdown("---")
 
-                # Show specific conflicts found
-                with st.expander("🔴 **Diagnóstico del Problema**", expanded=True):
-                    for conflict in diagnosis["conflicts"]:
-                        st.markdown(f"### {conflict['title']}")
+                # Show specific conflicts with better formatting
+                st.markdown("### 🔍 **Diagnóstico Detallado**")
+                for idx, conflict in enumerate(diagnosis["conflicts"], 1):
+                    # Use different expander colors based on type
+                    is_expanded = idx == 1  # Expand first conflict by default
+
+                    with st.expander(f"{conflict['title']}", expanded=is_expanded):
                         st.markdown(conflict["description"])
+
                         if "calculation" in conflict:
+                            st.markdown("**📐 Cálculos:**")
                             st.code(conflict["calculation"], language="text")
-                        st.markdown("---")
 
-                # Show specific suggestions
+                st.markdown("---")
+
+                # Show specific suggestions with better formatting
                 if diagnosis["suggestions"]:
-                    st.markdown("### ✅ **Soluciones Específicas para tu Caso:**")
+                    st.markdown("### ✅ **Cómo Solucionar Este Problema**")
+
+                    st.info(
+                        "A continuación se presentan soluciones específicas basadas en tu configuración actual. "
+                        "**Ajusta los controles de la barra lateral** con los valores recomendados:"
+                    )
+
                     for idx, suggestion in enumerate(diagnosis["suggestions"], 1):
-                        st.markdown(f"{idx}. {suggestion}")
+                        st.markdown(f"{suggestion}")
 
-                # General advice
-                st.info(
-                    """
-                    💡 **Consejo**: Empieza con restricciones más flexibles y luego ajústalas
-                    gradualmente hasta encontrar el balance óptimo para tu aplicación.
+                st.markdown("---")
 
-                    **Configuración recomendada para comenzar:**
-                    - Diámetro: 0.1m - 2.0m (amplio)
-                    - Peso máximo: 2000g (realista)
-                    - f/D: 0.3 - 0.8 (flexible)
-                    - Alcance: 5 km (moderado)
-                    """
-                )
+                # General advice based on severity
+                if diagnosis["severity"] == "critical":
+                    st.error(
+                        """
+                        🚨 **Acción Requerida**: Debes ajustar tus restricciones antes de continuar.
+                        El problema actual **no tiene solución matemática** con la configuración actual.
+                        """
+                    )
+                else:
+                    st.info(
+                        """
+                        💡 **Consejo General**: Si es tu primera vez usando SOGA, comienza con esta
+                        configuración probada y luego ajusta gradualmente:
+
+                        - **Diámetro**: 0.15 m - 1.5 m (rango amplio y realista)
+                        - **Peso máximo**: 1500 g (adecuado para UAVs medianos)
+                        - **f/D**: 0.35 - 0.70 (rango estándar para parábolas)
+                        - **Alcance**: 8 km (objetivo moderado)
+                        """
+                    )
 
             else:
                 # Other runtime errors
