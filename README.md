@@ -12,12 +12,14 @@
 ## 🎯 Características Principales
 
 - **Optimización Multiobjetivo**: Algoritmo NSGA-II para balance ganancia/peso
-- **Modelos Físicos Rigurosos**: Basado en ecuaciones electromagnéticas de Balanis y IEEE
+- **Modelos Físicos Rigurosos**: Basado en ecuaciones electromagnéticas de Balanis, Kraus, IEEE y Nikolova
+- **Validaciones Inteligentes**: Sistema de diagnóstico detallado con 6 tipos de análisis de infeasibilidad
 - **Arquitectura Modular**: Separación clara entre dominio, aplicación e infraestructura
 - **Alta Calidad**: 94% de cobertura de tests, 103 tests pasando
 - **Configurable**: Todos los parámetros centralizados en `config.toml`
 - **Reproducible**: Resultados deterministas con semillas fijas
 - **Interfaz Web Moderna**: Dashboard interactivo con Streamlit y diseño profesional oscuro
+- **Launcher Inteligente**: Auto-setup con detección y recuperación de entornos virtuales corruptos
 - **UI/UX Mejorada**: Tema oscuro con gradientes morados, componentes estilizados y animaciones suaves
 
 ---
@@ -72,9 +74,11 @@ chmod +x run_dashboard.sh  # Solo la primera vez
 ¡Eso es todo! El script automáticamente:
 - ✅ Crea el entorno virtual (primera ejecución)
 - ✅ Instala todas las dependencias (primera ejecución)
+- ✅ Detecta y repara entornos virtuales corruptos
+- ✅ Reinstala dependencias faltantes automáticamente
 - ✅ Lanza el dashboard en http://localhost:8501
 
-En ejecuciones posteriores, simplemente ejecuta el mismo script y se abrirá el dashboard directamente.
+En ejecuciones posteriores, simplemente ejecuta el mismo script y se abrirá el dashboard directamente. Si el entorno virtual presenta problemas, el script lo detectará y recreará automáticamente.
 
 ---
 
@@ -160,7 +164,14 @@ La aplicación se abrirá automáticamente en `http://localhost:8501`
 
 ### Características del Dashboard
 
-- **Nueva Optimización**: Configura parámetros y ejecuta optimizaciones
+- **Nueva Optimización**: Configura parámetros y ejecuta optimizaciones con validación en tiempo real
+- **Diagnóstico Inteligente**: 6 tipos de análisis de infeasibilidad con cálculos matemáticos detallados
+  - Restricciones de peso físicamente imposibles
+  - Incompatibilidad peso-diámetro
+  - Rangos f/D demasiado estrechos
+  - Rangos de diámetro limitados
+  - Alcance incompatible con tamaño de antena
+  - Problemas sobre-restringidos generales
 - **Análisis de Resultados**: Visualiza y compara resultados guardados
 - **Gráficos Interactivos**: Frentes de Pareto, convergencia, geometrías
 - **Exportación**: Descarga resultados en CSV
@@ -228,19 +239,26 @@ Edita `config.toml` para personalizar parámetros:
 
 ```toml
 [simulation]
-frequency_ghz = 2.4           # Banda ISM 2.4 GHz
-efficiency_peak = 0.70        # Eficiencia máxima
-optimal_f_d_ratio = 0.45      # f/D óptimo
+frequency_ghz = 2.4               # Banda ISM 2.4 GHz
+aperture_efficiency = 0.6         # Eficiencia de apertura típica
+areal_density_kg_per_m2 = 1.8     # Densidad areal realista (reflector + feed + estructura)
+beamwidth_k_factor = 65.0         # Factor k para cálculo de ancho de haz (IEEE Std 145-2013)
+
+[aperture_efficiency_model]
+efficiency_peak = 0.70            # Eficiencia máxima alcanzable
+optimal_f_d_ratio = 0.45          # f/D óptimo (spillover vs blockage)
+curvature_blockage = 0.128        # Curvatura en régimen de blockage (f/D < 0.45)
+curvature_spillover = 0.236       # Curvatura en régimen de spillover (f/D ≥ 0.45)
 
 [optimization]
-population_size = 40          # Tamaño población
-max_generations = 80          # Generaciones
-seed = 1                      # Reproducibilidad
+population_size = 40              # Tamaño población NSGA-II
+max_generations = 80              # Generaciones
+seed = 1                          # Reproducibilidad
 
 [realistic_limits]
-min_diameter_m = 0.05         # Diámetro mínimo
-max_diameter_m = 3.0          # Diámetro máximo
-max_payload_g = 5000.0        # Peso máximo
+min_diameter_m = 0.05             # Diámetro mínimo
+max_diameter_m = 3.0              # Diámetro máximo
+max_payload_g = 5000.0            # Peso máximo
 ```
 
 ---
@@ -312,15 +330,34 @@ pytest-watch tests/
 
 SOGA ha sido validado contra literatura científica estándar:
 
-- **Balanis, C.A.** "Antenna Theory" (2016)
-- **Kraus, J.D.** "Antennas" (1988)
+- **Balanis, C.A.** "Antenna Theory" (2016) - Capítulo 15: Reflector Antennas
+- **Kraus, J.D.** "Antennas" (1988) - Capítulo 9: Parabolic Reflectors
 - **IEEE Std 145-2013**: Definitions of Terms for Antennas
+- **Nikolova, N.K.** (2016) "Lecture 19: Reflector Antennas" - McMaster University
 - **Stutzman & Thiele** "Antenna Theory and Design" (2012)
+- **Wade, P. N1BWT** "Parabolic Dish Antennas" - ARRL
+
+### Modelo de Eficiencia de Apertura
+
+El modelo implementa una curva asimétrica validada con datos de múltiples fuentes:
+
+```
+η(f/D) = η_peak - κ(f/D) × (f/D - f/D_opt)²
+
+donde:
+- η_peak = 0.70 (máximo alcanzable)
+- f/D_opt = 0.45 (óptimo teórico)
+- κ = 0.128 (blockage regime, f/D < 0.45)
+- κ = 0.236 (spillover regime, f/D ≥ 0.45)
+```
+
+Ratio de asimetría: **1.84×** (spillover degrada ~2× más rápido que blockage)
 
 Todas las fórmulas electromagnéticas implementadas han sido verificadas con:
-- Calculadoras de referencia (Pasternack)
-- Cálculos manuales paso a paso
-- Validación de propiedades físicas (G ∝ D², θ ∝ 1/D)
+- Calculadoras de referencia (Pasternack, RF Wireless World)
+- Cálculos manuales paso a paso con derivaciones completas
+- Validación de propiedades físicas (G ∝ D², θ ∝ 1/D, η vs f/D)
+- Datasheets comerciales de antenas parabólicas
 
 ---
 
