@@ -341,4 +341,6 @@ class ApplicationFacade:
             "beamwidth_deg": round(result.performance_metrics.beamwidth, 2),
             # Historial de convergencia (mantener precisión completa para análisis)
             "convergence": result.convergence_history,
+            # Frente de Pareto completo (todas las soluciones óptimas)
+            "pareto_front": result.pareto_front,
         }

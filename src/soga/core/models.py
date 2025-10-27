@@ -154,6 +154,24 @@ class OptimizationConstraints:
 
 
 @dataclass
+class ParetoPoint:
+    """
+    Representa un punto individual en el frente de Pareto.
+
+    Attributes:
+        diameter (float): Diámetro de la antena en metros (m).
+        f_d_ratio (float): Relación focal f/D (adimensional).
+        gain (float): Ganancia de la antena en dBi.
+        weight (float): Peso de la antena en kg.
+    """
+
+    diameter: float
+    f_d_ratio: float
+    gain: float
+    weight: float
+
+
+@dataclass
 class OptimizationResult:
     """
     Contiene el resultado de un proceso de optimización.
@@ -164,8 +182,11 @@ class OptimizationResult:
             para la geometría óptima.
         convergence_history (Optional[List[float]]): Una lista que registra la evolución
             de la mejor solución a lo largo de las generaciones del optimizador.
+        pareto_front (Optional[List[ParetoPoint]]): Lista de todas las soluciones del
+            frente de Pareto encontradas por el algoritmo.
     """
 
     optimal_geometry: AntennaGeometry
     performance_metrics: PerformanceMetrics
     convergence_history: Optional[List[float]] = field(default_factory=list)
+    pareto_front: Optional[List[ParetoPoint]] = field(default_factory=list)

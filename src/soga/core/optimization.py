@@ -18,6 +18,7 @@ from soga.core.models import (
     AntennaGeometry,
     OptimizationConstraints,
     OptimizationResult,
+    ParetoPoint,
     PerformanceMetrics,
 )
 from soga.core.physics import calculate_gain, calculate_beamwidth
@@ -357,6 +358,25 @@ class OptimizationEngine:
                 "Verifique las restricciones del problema."
             )
 
+        # Extraer el frente de Pareto completo
+        # res.X contiene las variables de decisión [diámetro, f_d_ratio]
+        # res.F contiene los objetivos [-ganancia, peso]
+        pareto_front = []
+        for i in range(len(res.X)):
+            diameter = res.X[i][0]
+            f_d_ratio = res.X[i][1]
+            gain = -res.F[i][0]  # Convertir de -ganancia a ganancia
+            weight = res.F[i][1]
+
+            pareto_front.append(
+                ParetoPoint(
+                    diameter=float(diameter),
+                    f_d_ratio=float(f_d_ratio),
+                    gain=float(gain),
+                    weight=float(weight),
+                )
+            )
+
         # Seleccionar el "knee point" del frente de Pareto
         # El knee point es la solución con mejor balance ganancia/peso
         best_vars = self._select_knee_point(res.X, res.F)
@@ -417,6 +437,7 @@ class OptimizationEngine:
             optimal_geometry=optimal_geometry,
             performance_metrics=final_metrics,
             convergence_history=convergence_history,
+            pareto_front=pareto_front,
         )
 
         return result

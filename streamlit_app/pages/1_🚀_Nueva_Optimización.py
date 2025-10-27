@@ -94,6 +94,134 @@ def create_convergence_plot(convergence_history: list[float]) -> go.Figure:
     return fig
 
 
+def create_pareto_front_plot(pareto_front: list, optimal_point: dict) -> go.Figure:
+    """
+    Create an interactive Plotly scatter plot for the Pareto front.
+
+    Args:
+        pareto_front: List of ParetoPoint objects from optimization
+        optimal_point: Dictionary with the selected knee point data
+
+    Returns:
+        Plotly Figure object
+    """
+    if not pareto_front:
+        # Return empty figure if no data
+        fig = go.Figure()
+        fig.update_layout(
+            title="No hay datos del frente de Pareto disponibles",
+            plot_bgcolor="#1a1f2e",
+            paper_bgcolor="#1a1f2e",
+        )
+        return fig
+
+    # Extract data from pareto_front
+    weights_kg = [point.weight for point in pareto_front]
+    gains_dbi = [point.gain for point in pareto_front]
+    diameters_m = [point.diameter for point in pareto_front]
+    fd_ratios = [point.f_d_ratio for point in pareto_front]
+
+    # Convert weights to grams for display
+    weights_g = [w * 1000 for w in weights_kg]
+
+    # Optimal point weight in grams
+    optimal_weight_kg = (
+        optimal_point["optimal_diameter_mm"] / 1000
+    ) ** 2 * 3.14159 * 1.8 / 4  # Approximate
+    optimal_weight_g = optimal_weight_kg * 1000
+    optimal_gain = optimal_point["expected_gain_dbi"]
+
+    # Create hover text with detailed information
+    hover_texts = [
+        f"<b>Ganancia:</b> {gain:.2f} dBi<br>"
+        f"<b>Peso:</b> {weight:.1f} g<br>"
+        f"<b>Diámetro:</b> {diameter*1000:.1f} mm<br>"
+        f"<b>f/D:</b> {fd:.3f}"
+        for gain, weight, diameter, fd in zip(gains_dbi, weights_g, diameters_m, fd_ratios)
+    ]
+
+    fig = go.Figure()
+
+    # Add all Pareto solutions as scatter points
+    fig.add_trace(
+        go.Scatter(
+            x=weights_g,
+            y=gains_dbi,
+            mode="markers",
+            name="Soluciones Pareto",
+            marker={
+                "size": 8,
+                "color": "#667eea",
+                "opacity": 0.6,
+                "line": {"width": 1, "color": "#4c51bf"},
+            },
+            hovertext=hover_texts,
+            hovertemplate="%{hovertext}<extra></extra>",
+        )
+    )
+
+    # Highlight the knee point (optimal solution)
+    fig.add_trace(
+        go.Scatter(
+            x=[optimal_weight_g],
+            y=[optimal_gain],
+            mode="markers",
+            name="Knee Point (Óptimo)",
+            marker={
+                "size": 16,
+                "color": "#f56565",
+                "symbol": "star",
+                "line": {"width": 2, "color": "#c53030"},
+            },
+            hovertemplate=(
+                f"<b>SOLUCIÓN ÓPTIMA (Knee Point)</b><br>"
+                f"<b>Ganancia:</b> {optimal_gain:.2f} dBi<br>"
+                f"<b>Peso:</b> {optimal_weight_g:.1f} g<br>"
+                f"<b>Diámetro:</b> {optimal_point['optimal_diameter_mm']:.1f} mm<br>"
+                f"<b>f/D:</b> {optimal_point['f_d_ratio']:.3f}"
+                "<extra></extra>"
+            ),
+        )
+    )
+
+    # Update layout with professional styling
+    fig.update_layout(
+        title={
+            "text": "Frente de Pareto: Ganancia vs Peso",
+            "x": 0.5,
+            "xanchor": "center",
+            "font": {"size": 20, "color": "#e2e8f0"},
+        },
+        xaxis={
+            "title": "Peso de la Antena (g)",
+            "gridcolor": "#2d3748",
+            "color": "#e2e8f0",
+            "showgrid": True,
+        },
+        yaxis={
+            "title": "Ganancia (dBi)",
+            "gridcolor": "#2d3748",
+            "color": "#e2e8f0",
+            "showgrid": True,
+        },
+        plot_bgcolor="#1a1f2e",
+        paper_bgcolor="#1a1f2e",
+        font={"color": "#e2e8f0"},
+        hovermode="closest",
+        showlegend=True,
+        legend={
+            "x": 0.02,
+            "y": 0.98,
+            "bgcolor": "rgba(26, 31, 46, 0.8)",
+            "bordercolor": "#667eea",
+            "borderwidth": 1,
+        },
+        height=600,
+    )
+
+    return fig
+
+
 def diagnose_infeasibility(user_parameters: dict, config) -> dict:
     """
     Diagnose why the optimization is infeasible and provide specific feedback.
@@ -1229,9 +1357,10 @@ def main() -> None:
         st.markdown("---")
 
         # Tabs for detailed results
-        tab1, tab2, tab3 = st.tabs(
+        tab1, tab2, tab3, tab4 = st.tabs(
             [
                 "📉 Gráfico de Convergencia",
+                "📊 Frente de Pareto",
                 "📐 Geometría Detallada",
                 "💾 Guardar y Exportar",
             ]
@@ -1259,6 +1388,86 @@ def main() -> None:
                 st.metric("Mejora Total", f"{improvement:.2f} dB")
 
         with tab2:
+            st.markdown("#### Frente de Pareto: Trade-offs entre Ganancia y Peso")
+            st.markdown(
+                """
+                El **frente de Pareto** muestra todas las soluciones óptimas encontradas por NSGA-II.
+                Cada punto representa una configuración de antena donde no es posible mejorar un objetivo
+                (ganancia o peso) sin empeorar el otro.
+
+                - **Puntos azules**: Todas las soluciones del frente de Pareto
+                - **Estrella roja**: Knee point (solución con mejor balance seleccionada automáticamente)
+                """
+            )
+
+            # Check if pareto_front data is available
+            if "pareto_front" in result and result["pareto_front"]:
+                # Create and display Pareto front plot
+                pareto_fig = create_pareto_front_plot(
+                    result["pareto_front"],
+                    result
+                )
+                st.plotly_chart(pareto_fig, use_container_width=True)
+
+                # Statistics about the Pareto front
+                st.markdown("---")
+                st.markdown("##### 📈 Estadísticas del Frente de Pareto")
+
+                col1, col2, col3, col4 = st.columns(4)
+
+                pareto_gains = [p.gain for p in result["pareto_front"]]
+                pareto_weights = [p.weight * 1000 for p in result["pareto_front"]]  # Convert to grams
+
+                with col1:
+                    st.metric(
+                        "Soluciones Encontradas",
+                        f"{len(result['pareto_front'])}",
+                        help="Número total de soluciones óptimas en el frente de Pareto"
+                    )
+
+                with col2:
+                    st.metric(
+                        "Rango de Ganancia",
+                        f"{min(pareto_gains):.1f} - {max(pareto_gains):.1f} dBi",
+                        help="Rango de ganancias disponibles en las soluciones óptimas"
+                    )
+
+                with col3:
+                    st.metric(
+                        "Rango de Peso",
+                        f"{min(pareto_weights):.0f} - {max(pareto_weights):.0f} g",
+                        help="Rango de pesos disponibles en las soluciones óptimas"
+                    )
+
+                with col4:
+                    # Calculate trade-off ratio
+                    gain_range = max(pareto_gains) - min(pareto_gains)
+                    weight_range = max(pareto_weights) - min(pareto_weights)
+                    if weight_range > 0:
+                        tradeoff = gain_range / weight_range
+                        st.metric(
+                            "Trade-off",
+                            f"{tradeoff:.3f} dBi/g",
+                            help="Ganancia adicional por gramo de peso añadido"
+                        )
+
+                st.markdown("---")
+                st.info(
+                    """
+                    **💡 Interpretación del Frente de Pareto:**
+
+                    - **Zona izquierda** (bajo peso): Antenas más ligeras con menor ganancia
+                    - **Zona derecha** (alto peso): Antenas más pesadas con mayor ganancia
+                    - **Knee point** (estrella roja): Mejor compromiso entre ganancia y peso
+
+                    El algoritmo NSGA-II ha encontrado todas estas configuraciones óptimas.
+                    Dependiendo de tus prioridades específicas, podrías elegir cualquier punto del frente.
+                    """
+                )
+            else:
+                st.warning("No hay datos del frente de Pareto disponibles para esta optimización.")
+
+        with tab3:
             st.markdown("#### Especificaciones Geométricas Completas")
 
             # Parabola geometry visualization
@@ -1325,7 +1534,7 @@ def main() -> None:
             with st.expander("🔍 Ver Datos Completos (JSON)"):
                 st.json(result)
 
-        with tab3:
+        with tab4:
             st.markdown("#### Opciones de Guardado y Exportación")
 
             # Session save section
