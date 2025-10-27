@@ -35,8 +35,9 @@ class SimulationConfig:
 
     frequency_ghz: float
     aperture_efficiency: float
-    areal_density_kg_per_m2: float
     beamwidth_k_factor: float
+    reflector_areal_density_kg_per_m2: float
+    fixed_component_weight_kg: float
     efficiency_peak: float
     optimal_f_d_ratio: float
     curvature_low_fd: float
@@ -52,13 +53,17 @@ class SimulationConfig:
             raise ValueError(
                 f"La eficiencia de apertura debe estar entre 0 y 1, recibido: {self.aperture_efficiency}"
             )
-        if self.areal_density_kg_per_m2 <= 0:
-            raise ValueError(
-                f"La densidad areal debe ser positiva, recibido: {self.areal_density_kg_per_m2}"
-            )
         if self.beamwidth_k_factor <= 0:
             raise ValueError(
                 f"El factor K debe ser positivo, recibido: {self.beamwidth_k_factor}"
+            )
+        if self.reflector_areal_density_kg_per_m2 <= 0:
+            raise ValueError(
+                f"La densidad areal del reflector debe ser positiva, recibido: {self.reflector_areal_density_kg_per_m2}"
+            )
+        if self.fixed_component_weight_kg < 0:
+            raise ValueError(
+                f"El peso fijo de componentes debe ser no negativo, recibido: {self.fixed_component_weight_kg}"
             )
         if not 0 < self.efficiency_peak <= 1:
             raise ValueError(
@@ -282,8 +287,9 @@ class ConfigLoader:
         simulation = SimulationConfig(
             frequency_ghz=data["simulation"]["frequency_ghz"],
             aperture_efficiency=data["simulation"]["aperture_efficiency"],
-            areal_density_kg_per_m2=data["simulation"]["areal_density_kg_per_m2"],
             beamwidth_k_factor=data["simulation"]["beamwidth_k_factor"],
+            reflector_areal_density_kg_per_m2=data["simulation"]["reflector_areal_density_kg_per_m2"],
+            fixed_component_weight_kg=data["simulation"]["fixed_component_weight_kg"],
             efficiency_peak=data["simulation"]["efficiency_peak"],
             optimal_f_d_ratio=data["simulation"]["optimal_f_d_ratio"],
             curvature_low_fd=data["simulation"]["curvature_low_fd"],

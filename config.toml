@@ -8,8 +8,11 @@ speed_of_light = 299792458.0  # Velocidad de la luz en m/s
 # Parámetros de simulación por defecto
 frequency_ghz = 2.4               # Frecuencia de operación en GHz (banda ISM 2.4 GHz - WiFi)
 aperture_efficiency = 0.6         # Eficiencia de apertura típica (0-1)
-areal_density_kg_per_m2 = 1.8    # Densidad areal: reflector (1.35) + feed/LNB (0.2) + estructura (0.15) + margen (0.1) = 1.8 kg/m²
 beamwidth_k_factor = 65.0         # Factor k para cálculo de ancho de haz (IEEE Std 145-2013, típico)
+
+# Modelo de peso realista: Peso_total = (densidad_reflector × área) + peso_fijo
+reflector_areal_density_kg_per_m2 = 1.35  # Densidad del reflector parabólico (aluminio, fibra de vidrio)
+fixed_component_weight_kg = 0.45           # Peso fijo: feed (0.2) + LNB (0.15) + soporte base (0.1) = 0.45 kg
 
 # Parámetros del modelo de eficiencia de apertura vs f/D
 # Basado en literatura (Balanis, Kraus)

@@ -28,8 +28,9 @@ speed_of_light = 299792458.0
 [simulation]
 frequency_ghz = 2.4
 aperture_efficiency = 0.6
-areal_density_kg_per_m2 = 1.5
 beamwidth_k_factor = 65.0
+reflector_areal_density_kg_per_m2 = 1.35
+fixed_component_weight_kg = 0.45
 efficiency_peak = 0.70
 optimal_f_d_ratio = 0.45
 curvature_low_fd = 0.128
@@ -47,6 +48,15 @@ max_payload_g = 1000.0
 min_f_d_ratio = 0.3
 max_f_d_ratio = 0.8
 desired_range_km = 5.0
+
+[link_budget]
+tx_power_dbm = 20.0
+rx_sensitivity_dbm = -95.0
+rx_noise_figure_db = 6.0
+required_snr_db = 10.0
+fade_margin_db = 10.0
+implementation_loss_db = 3.0
+min_link_margin_db = 6.0
 
 [regulatory]
 max_eirp_dbm = 36.0
@@ -143,8 +153,9 @@ class TestConfigDataclasses:
         sim = SimulationConfig(
             frequency_ghz=2.4,
             aperture_efficiency=0.6,
-            areal_density_kg_per_m2=1.5,
             beamwidth_k_factor=70.0,
+            reflector_areal_density_kg_per_m2=1.35,
+            fixed_component_weight_kg=0.45,
             efficiency_peak=0.70,
             optimal_f_d_ratio=0.45,
             curvature_low_fd=0.128,
@@ -214,8 +225,9 @@ speed_of_light = 299792458.0
 [simulation]
 frequency_ghz = 24.0
 aperture_efficiency = 0.6
-areal_density_kg_per_m2 = 1.5
 beamwidth_k_factor = 65.0
+reflector_areal_density_kg_per_m2 = 1.35
+fixed_component_weight_kg = 0.45
 efficiency_peak = 0.70
 optimal_f_d_ratio = 0.45
 curvature_low_fd = 0.128
@@ -233,6 +245,15 @@ max_payload_g = 1000.0
 min_f_d_ratio = 0.3
 max_f_d_ratio = 0.8
 desired_range_km = 5.0
+
+[link_budget]
+tx_power_dbm = 20.0
+rx_sensitivity_dbm = -95.0
+rx_noise_figure_db = 6.0
+required_snr_db = 10.0
+fade_margin_db = 10.0
+implementation_loss_db = 3.0
+min_link_margin_db = 6.0
 
 [regulatory]
 max_eirp_dbm = 36.0

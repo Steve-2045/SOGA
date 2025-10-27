@@ -29,7 +29,8 @@ _config = get_config()
 
 # --- Constantes de simulación cargadas desde config.toml ---
 SIM_FREQUENCY_GHZ = _config.simulation.frequency_ghz
-SIM_AREAL_DENSITY_KG_PER_M2 = _config.simulation.areal_density_kg_per_m2
+SIM_REFLECTOR_DENSITY_KG_PER_M2 = _config.simulation.reflector_areal_density_kg_per_m2
+SIM_FIXED_WEIGHT_KG = _config.simulation.fixed_component_weight_kg
 EFFICIENCY_PEAK = _config.simulation.efficiency_peak
 OPTIMAL_F_D_RATIO = _config.simulation.optimal_f_d_ratio
 CURVATURE_LOW_FD = _config.simulation.curvature_low_fd
@@ -209,10 +210,11 @@ class AntennaProblem(Problem):
         f1 = -gains  # Negativo porque pymoo minimiza
 
         # --- Objetivo 2: Minimizar peso ---
-        # Optimización: precalcular constante π * densidad / 4
-        # peso = π * (D/2)² * densidad = (π/4) * D² * densidad
-        WEIGHT_FACTOR = np.pi * SIM_AREAL_DENSITY_KG_PER_M2 / 4.0
-        weights = WEIGHT_FACTOR * diameters**2
+        # Modelo realista: Peso = (densidad_reflector × área_reflector) + peso_fijo
+        # área = π × (D/2)² = (π/4) × D²
+        # Peso_total = (π/4) × D² × densidad_reflector + peso_fijo_componentes
+        reflector_area = (np.pi / 4.0) * diameters**2  # m²
+        weights = (SIM_REFLECTOR_DENSITY_KG_PER_M2 * reflector_area) + SIM_FIXED_WEIGHT_KG
         f2 = weights
 
         # --- Restricción: peso <= max_weight ---

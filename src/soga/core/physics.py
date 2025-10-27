@@ -81,6 +81,60 @@ def calculate_gain(
     return gain_dbi
 
 
+def calculate_weight(
+    diameter: Union[float, np.ndarray],
+    reflector_density_kg_per_m2: float = 1.35,
+    fixed_weight_kg: float = 0.45,
+) -> Union[float, np.ndarray]:
+    """
+    Calcula el peso total de una antena parabólica usando un modelo realista.
+
+    Modelo: Peso_total = (densidad_reflector × área_reflector) + peso_fijo_componentes
+
+    El modelo considera:
+    - Peso del reflector: Escala con el área (D²)
+    - Peso de componentes fijos: Feed, LNB, soporte base (no escalan con tamaño)
+
+    Args:
+        diameter: Diámetro de la antena en metros (m)
+        reflector_density_kg_per_m2: Densidad areal del reflector parabólico (kg/m²).
+            Valores típicos: 1.2-1.5 kg/m² (aluminio, fibra de vidrio).
+            Default: 1.35 kg/m²
+        fixed_weight_kg: Peso fijo de componentes (feed + LNB + soporte base) en kg.
+            Default: 0.45 kg (0.2 feed + 0.15 LNB + 0.1 soporte)
+
+    Returns:
+        Peso total de la antena en kilogramos (kg)
+
+    Raises:
+        ValueError: Si los parámetros no son físicamente válidos
+
+    Examples:
+        >>> calculate_weight(0.5)  # Antena pequeña de 50 cm
+        0.71  # kg (0.26 kg reflector + 0.45 kg componentes)
+        >>> calculate_weight(2.0)  # Antena grande de 2 m
+        4.69  # kg (4.24 kg reflector + 0.45 kg componentes)
+
+    References:
+        - Antenas comerciales: UBNT PowerBeam, Mikrotik Dish series
+        - Densidades típicas: 1.2-1.5 kg/m² para reflectores de aluminio/fibra
+    """
+    if np.any(np.less_equal(diameter, 0)):
+        raise ValueError("El diámetro debe ser un valor positivo.")
+    if reflector_density_kg_per_m2 <= 0:
+        raise ValueError("La densidad del reflector debe ser positiva.")
+    if fixed_weight_kg < 0:
+        raise ValueError("El peso fijo debe ser no negativo.")
+
+    # Calcular área del reflector: A = π × (D/2)² = (π/4) × D²
+    reflector_area_m2 = (np.pi / 4.0) * diameter**2
+
+    # Peso total = peso del reflector + peso de componentes fijos
+    total_weight_kg = (reflector_density_kg_per_m2 * reflector_area_m2) + fixed_weight_kg
+
+    return total_weight_kg
+
+
 def calculate_beamwidth(
     diameter: Union[float, np.ndarray],
     frequency_ghz: Union[float, np.ndarray],
