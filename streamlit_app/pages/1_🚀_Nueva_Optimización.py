@@ -1543,9 +1543,23 @@ def main() -> None:
                 "Guarde los parámetros de entrada y resultados en formato JSON para análisis posterior."
             )
 
+            # Prepare session data for JSON serialization
+            # Convert ParetoPoint objects to dictionaries
+            result_copy = dict(st.session_state.result)
+            if "pareto_front" in result_copy and result_copy["pareto_front"]:
+                result_copy["pareto_front"] = [
+                    {
+                        "diameter": p.diameter,
+                        "f_d_ratio": p.f_d_ratio,
+                        "gain": p.gain,
+                        "weight": p.weight,
+                    }
+                    for p in result_copy["pareto_front"]
+                ]
+
             session_data = {
                 "params": st.session_state.user_parameters,
-                "results": st.session_state.result,
+                "results": result_copy,
             }
 
             session_json = json.dumps(session_data, indent=2, ensure_ascii=False)
