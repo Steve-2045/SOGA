@@ -11,7 +11,8 @@ from soga.core.optimization import (
     AntennaProblem,
     OptimizationEngine,
     aperture_efficiency_model,
-    SIM_AREAL_DENSITY_KG_PER_M2,
+    SIM_REFLECTOR_DENSITY_KG_PER_M2,
+    SIM_FIXED_WEIGHT_KG,
     EFFICIENCY_PEAK,
     OPTIMAL_F_D_RATIO,
 )
@@ -36,7 +37,7 @@ def tight_constraints():
     return OptimizationConstraints(
         min_diameter=0.15,
         max_diameter=0.25,
-        max_weight=0.05,  # Muy restrictivo
+        max_weight=0.50,  # Restrictivo pero físicamente posible (~500g para D=0.15-0.25m)
         min_f_d_ratio=0.4,
         max_f_d_ratio=0.5,
         desired_range_km=5.0,
@@ -143,8 +144,9 @@ class TestAntennaProblem:
         assert out["F"][0, 0] == pytest.approx(-expected_gain, abs=0.1)
 
         # --- Verificar Objetivo 2: Peso
+        # Modelo realista: Peso = (densidad_reflector × área) + peso_fijo
         expected_area = np.pi * (1.0 / 2) ** 2
-        expected_weight = expected_area * SIM_AREAL_DENSITY_KG_PER_M2
+        expected_weight = (expected_area * SIM_REFLECTOR_DENSITY_KG_PER_M2) + SIM_FIXED_WEIGHT_KG
         assert out["F"][0, 1] == pytest.approx(expected_weight)
 
         # --- Verificar Restricción 1: Peso
