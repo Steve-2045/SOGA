@@ -187,7 +187,7 @@ class ApplicationFacade:
             if value < min_limit or value > max_limit:
                 raise ValueError(
                     f"El parámetro '{param_name}' = {value}{unit} está fuera del rango "
-                    f"realista para aplicaciones de drones: [{min_limit}{unit}, {max_limit}{unit}]. "
+                    f"realista: [{min_limit}{unit}, {max_limit}{unit}]. "
                     f"Este límite garantiza fabricabilidad y operación práctica."
                 )
 

@@ -92,13 +92,13 @@ min_link_margin_db = 6.0    # Margen mínimo de link budget para validación: 6 
 max_eirp_dbm = 36.0         # PIRE máximo permitido en dBm
 
 [realistic_limits]
-# Límites realistas para aplicaciones de drones (UAV)
-# Basados en restricciones prácticas de fabricación, transporte y operación
+# Límites realistas para antenas parabólicas de 2.4 GHz
+# Basados en restricciones prácticas de fabricación, portabilidad y operación
 min_diameter_m = 0.05       # 5 cm: mínimo práctico para 2.4 GHz
-max_diameter_m = 3.0        # 3 m: máximo transportable/operacional para UAV
+max_diameter_m = 3.0        # 3 m: máximo práctico para aplicaciones portátiles
 min_payload_g = 10.0        # 10 g: peso mínimo realista con estructura
-max_payload_g = 5000.0      # 5 kg: máximo para drones comerciales típicos
+max_payload_g = 5000.0      # 5 kg: máximo práctico para aplicaciones portátiles
 min_f_d_ratio = 0.2         # Límite físico inferior (parábola profunda)
 max_f_d_ratio = 1.5         # Límite físico superior (parábola muy plana)
 min_range_km = 0.1          # 100 m: rango mínimo útil
-max_range_km = 50.0         # 50 km: límite realista para UAV comerciales
+max_range_km = 50.0         # 50 km: alcance máximo típico a 2.4 GHz

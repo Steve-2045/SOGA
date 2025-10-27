@@ -165,7 +165,7 @@ class RegulatoryConfig:
 
 @dataclass
 class RealisticLimitsConfig:
-    """Límites realistas para aplicaciones de drones."""
+    """Límites realistas para antenas parabólicas de 2.4 GHz."""
 
     min_diameter_m: float
     max_diameter_m: float

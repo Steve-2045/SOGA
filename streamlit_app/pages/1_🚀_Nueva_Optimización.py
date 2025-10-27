@@ -911,7 +911,7 @@ def validate_user_inputs(user_parameters: dict, config) -> tuple[bool, list[str]
     if max_d > realistic_limits.max_diameter_m:
         warnings_list.append(
             f"⚠️ **Diámetro inusualmente grande**: {max_d:.2f} m excede el límite "
-            f"realista de {realistic_limits.max_diameter_m:.2f} m para UAVs. "
+            f"realista de {realistic_limits.max_diameter_m:.2f} m. "
             f"La optimización continuará, pero verifica que sea intencional."
         )
 
@@ -996,7 +996,7 @@ def main() -> None:
             max_value=float(config.realistic_limits.max_payload_g),
             value=float(config.user_defaults.max_payload_g),
             step=50.0,
-            help="Peso máximo que el UAV puede transportar (incluyendo antena y estructura)",
+            help="Peso máximo permitido para la antena terrestre (incluyendo reflector, alimentador y estructura de soporte)",
         )
 
         # Quick validation: check if weight is compatible with diameter
@@ -1299,7 +1299,7 @@ def main() -> None:
                         configuración probada y luego ajusta gradualmente:
 
                         - **Diámetro**: 0.15 m - 1.5 m (rango amplio y realista)
-                        - **Peso máximo**: 1500 g (adecuado para UAVs medianos)
+                        - **Peso máximo**: 1500 g (balance entre portabilidad y rendimiento)
                         - **f/D**: 0.35 - 0.70 (rango estándar para parábolas)
                         - **Alcance**: 8 km (objetivo moderado)
                         """

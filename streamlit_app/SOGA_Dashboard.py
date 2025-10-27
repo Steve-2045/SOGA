@@ -27,7 +27,7 @@ st.set_page_config(
     menu_items={
         "Get Help": "https://github.com/tu-repo/soga",
         "Report a bug": "https://github.com/tu-repo/soga/issues",
-        "About": "SOGA: Software de Optimización Geométrica de Antenas para UAVs",
+        "About": "SOGA: Optimización de Antenas para Drones en Agricultura de Precisión",
     },
 )
 
@@ -37,7 +37,7 @@ def main() -> None:
     # Title and header
     st.title("📡 SOGA: Software de Optimización Geométrica de Antenas")
     st.markdown(
-        "### Optimización de Antenas Parabólicas en UAVs"
+        "### Antenas Parabólicas para Comunicación con Drones en Agricultura de Precisión"
     )
 
     st.markdown("---")
@@ -50,8 +50,8 @@ def main() -> None:
             """
             ## Bienvenido
 
-            Herramienta avanzada de optimización multi-objetivo para diseño de antenas
-            parabólicas de alto rendimiento en Vehículos Aéreos No Tripulados (UAVs).
+            Herramienta avanzada de optimización multi-objetivo para diseño de antenas parabólicas
+            direccionales de 2.4 GHz para comunicación terrestre con drones en agricultura de precisión.
 
             ### Características Principales
 
@@ -62,7 +62,7 @@ def main() -> None:
               de antenas parabólicas de alta precisión.
 
             - **Validación Física**: Todas las configuraciones se validan contra límites realistas
-              de fabricación y operación en drones.
+              de fabricación y operación práctica.
 
             - **Análisis de Convergencia**: Visualización completa del proceso de optimización
               generación por generación.

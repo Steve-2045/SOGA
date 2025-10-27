@@ -5,7 +5,20 @@
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A+-brightgreen)]()
 
-**SOGA** es un motor de optimización multiobjetivo especializado en el diseño de antenas parabólicas para drones (UAVs). Utiliza algoritmos genéticos avanzados (NSGA-II) para encontrar geometrías óptimas que balancean ganancia, peso y restricciones operacionales.
+**SOGA** es un motor de optimización multiobjetivo especializado en el diseño de antenas parabólicas direccionales de 2.4 GHz para comunicación con drones en agricultura de precisión. Utiliza algoritmos genéticos avanzados (NSGA-II) para encontrar geometrías óptimas que balancean ganancia, peso y restricciones operacionales.
+
+---
+
+## 🌾 Contexto: Agricultura de Precisión
+
+Este proyecto surge de la necesidad de **optimizar sistemas de comunicación terrestre** para drones utilizados en agricultura de precisión. Las antenas parabólicas terrestres permiten establecer enlaces de largo alcance para:
+
+- **Telemetría en tiempo real**: Monitoreo de sensores embarcados (cámaras multiespectrales, NDVI, temperatura)
+- **Control remoto**: Comandos de navegación y recolección de datos en campos extensos
+- **Transferencia de datos**: Descarga de imágenes de alta resolución sin necesidad de aterrizaje
+- **Cobertura extendida**: Alcances de hasta 50 km en banda ISM 2.4 GHz
+
+El desafío principal es encontrar el **balance óptimo** entre ganancia (alcance) y peso (portabilidad), permitiendo antenas que puedan instalarse fácilmente en diferentes ubicaciones del campo según las necesidades operacionales.
 
 ---
 
@@ -361,4 +374,4 @@ Todas las fórmulas electromagnéticas implementadas han sido verificadas con:
 
 ---
 
-**Hecho con ❤️ para agricultura de precisión y aplicaciones UAV**
+**Hecho con ❤️ para agricultura de precisión y aplicaciones de comunicación con drones**

@@ -1,8 +1,12 @@
 # Compromisos Desfavorables en el Diseño de Antenas Parabólicas
 
+## Contexto: Agricultura de Precisión
+
+Este documento analiza los trade-offs en el diseño de **antenas parabólicas terrestres** para comunicación con drones en agricultura de precisión. Las antenas se instalan en ubicaciones fijas o semi-portátiles en tierra para establecer enlaces de largo alcance con UAVs.
+
 ## Resumen Ejecutivo
 
-El sistema SOGA ahora incluye visualización del **frente de Pareto**, que muestra explícitamente todos los **trade-offs** (compromisos desfavorables) entre los diferentes objetivos de optimización.
+El sistema SOGA visualiza el **frente de Pareto**, que muestra explícitamente todos los **trade-offs** (compromisos desfavorables) entre los diferentes objetivos de optimización: ganancia, peso, geometría y alcance.
 
 ---
 
@@ -10,7 +14,7 @@ El sistema SOGA ahora incluye visualización del **frente de Pareto**, que muest
 
 ### Descripción del Conflicto
 
-Este es el trade-off más fundamental en el diseño de antenas parabólicas para UAVs:
+Este es el trade-off más fundamental en el diseño de antenas parabólicas terrestres para comunicación con UAVs:
 
 - **Mayor ganancia** → Requiere **mayor diámetro** → **Mayor peso**
 - **Menor peso** → Requiere **menor diámetro** → **Menor ganancia**
@@ -125,11 +129,11 @@ El modelo actual usa densidad areal constante (1.8 kg/m²), pero en la práctica
   - Peso real ≈ peso calculado
   - Mayor margen de carga útil disponible
 
-### Impacto en Diseño de UAV
+### Impacto en Diseño de Estación Terrestre
 
-Para un UAV con 800g de capacidad de carga:
+Para una estación terrestre con límite de 800g (portabilidad manual):
 
-| Antena | Peso Calculado | Peso Real Estimado | % Carga Útil |
+| Antena | Peso Calculado | Peso Real Estimado | % del Límite |
 |--------|----------------|-------------------|--------------|
 | 200 mm | 57 g | ~60 g | 7.5% |
 | 500 mm | 354 g | ~400 g | 50% |
@@ -158,7 +162,7 @@ Relación inversa fundamental de antenas:
 
 **Implicaciones**:
 - Antenas grandes requieren sistemas de tracking más precisos
-- Antenas pequeñas son más tolerantes a vibraciones del UAV
+- Antenas pequeñas son más tolerantes a vibraciones ambientales (viento, etc.)
 
 ---
 
@@ -193,23 +197,23 @@ El nuevo tab **"📊 Frente de Pareto"** muestra:
 
 ### Escenarios Típicos
 
-#### UAV de Reconocimiento (Prioridad: Peso)
-- **Objetivo**: Maximizar autonomía de vuelo
+#### Estación Portátil Ligera (Prioridad: Portabilidad)
+- **Objetivo**: Máxima movilidad para instalación rápida en campo
 - **Solución**: Zona izquierda del frente (peso < 200g)
 - **Trade-off aceptado**: Ganancia reducida (12-16 dBi)
-- **Beneficio**: Mayor tiempo de vuelo, menor consumo energético
+- **Beneficio**: Fácil transporte, instalación rápida sin herramientas
 
-#### UAV de Comunicaciones (Prioridad: Ganancia)
-- **Objetivo**: Maximizar alcance de enlace
+#### Estación Fija de Alto Rendimiento (Prioridad: Ganancia)
+- **Objetivo**: Maximizar alcance de comunicación con UAVs
 - **Solución**: Zona derecha del frente (peso > 500g)
-- **Trade-off aceptado**: Menor autonomía de vuelo
+- **Trade-off aceptado**: Mayor peso y complejidad de instalación
 - **Beneficio**: Alcance de comunicación >10 km
 
-#### UAV Multiuso (Prioridad: Balance)
-- **Objetivo**: Equilibrar todas las capacidades
+#### Estación Semi-Portátil (Prioridad: Balance)
+- **Objetivo**: Equilibrar portabilidad y rendimiento
 - **Solución**: **Knee point** (peso ~300-400g)
 - **Trade-off aceptado**: No óptimo en ningún extremo
-- **Beneficio**: Versatilidad operacional
+- **Beneficio**: Versatilidad operacional, buena relación peso/ganancia
 
 ---
 

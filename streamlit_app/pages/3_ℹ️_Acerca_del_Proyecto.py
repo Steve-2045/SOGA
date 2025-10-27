@@ -66,20 +66,30 @@ def main() -> None:
                 ### ¿Qué es SOGA?
 
                 **SOGA** (Software de Optimización Geométrica de Antenas) es un motor de optimización
-                multi-objetivo especializado en el diseño de antenas parabólicas para aplicaciones
-                de Vehículos Aéreos No Tripulados (UAVs).
+                multi-objetivo especializado en el diseño de antenas parabólicas direccionales de 2.4 GHz
+                para comunicación terrestre con drones en **agricultura de precisión**.
 
                 ### Objetivo Principal
 
-                Encontrar la geometría óptima de una antena parabólica que maximice la ganancia directiva
-                mientras satisface restricciones de peso, tamaño y operación en plataformas móviles aéreas.
+                Encontrar la geometría óptima de una antena parabólica terrestre que maximice la ganancia
+                directiva para establecer enlaces de largo alcance con drones, mientras satisface restricciones
+                de peso, tamaño y operación práctica.
 
-                ### Contexto de Aplicación
+                ### Contexto: Agricultura de Precisión con Drones
 
-                - **Agricultura de Precisión**: Telemetría de sensores en campos agrícolas
-                - **Monitoreo Ambiental**: Recolección de datos de estaciones remotas
-                - **Comunicaciones de Emergencia**: Enlaces de larga distancia en zonas de desastre
-                - **Investigación Científica**: Estudios atmosféricos y geológicos
+                Las antenas parabólicas terrestres optimizadas permiten:
+
+                - **Telemetría en Tiempo Real**: Monitoreo de sensores multiespectrales (NDVI, temperatura, humedad)
+                - **Control Remoto Extendido**: Comandos de navegación en campos de gran extensión
+                - **Transferencia de Datos**: Descarga de imágenes de alta resolución sin aterrizaje
+                - **Cobertura de Largo Alcance**: Enlaces de hasta 50 km en banda ISM 2.4 GHz
+
+                ### Otras Aplicaciones Potenciales
+
+                Aunque diseñado para agricultura de precisión, el software puede adaptarse a:
+                - Monitoreo ambiental con drones
+                - Comunicaciones de emergencia
+                - Investigación científica con UAVs
 
                 ### Características Destacadas
 
@@ -527,8 +537,8 @@ def main() -> None:
                   - Menor a esto: ganancia insuficiente para enlaces confiables
 
                 - **Máximo**: 3 m (3000 mm)
-                  - Justificación: Límite de transportabilidad en UAVs comerciales
-                  - Mayor a esto: problemas de estabilidad aerodinámica
+                  - Justificación: Límite práctico para aplicaciones portátiles
+                  - Mayor a esto: complejidad excesiva de fabricación y manipulación
 
                 ### Relación f/D
 
@@ -550,7 +560,7 @@ def main() -> None:
                   - Justificación: Peso mínimo con estructura mecánica
 
                 - **Máximo**: 5 kg (5000 g)
-                  - Justificación: Capacidad típica de UAVs comerciales (DJI, etc.)
+                  - Justificación: Límite práctico para aplicaciones que requieran portabilidad
 
                 ### Alcance de Comunicación
 
