@@ -253,7 +253,7 @@ def diagnose_infeasibility(user_parameters: dict, config) -> dict:
     range_km = user_parameters["desired_range_km"]
 
     # Get physical constants from config
-    areal_density = config.simulation.areal_density_kg_per_m2  # kg/m²
+    areal_density = config.simulation.reflector_areal_density_kg_per_m2  # kg/m²
     frequency_ghz = config.simulation.frequency_ghz
 
     # Use numpy pi for precision
@@ -826,7 +826,7 @@ def validate_user_inputs(user_parameters: dict, config) -> tuple[bool, list[str]
     # --- VALIDACIÓN 3: Peso vs Diámetro (física básica) ---
     import numpy as np
     pi = np.pi
-    areal_density = config.simulation.areal_density_kg_per_m2
+    areal_density = config.simulation.reflector_areal_density_kg_per_m2
 
     # Peso mínimo posible con el diámetro mínimo
     min_area = pi * (min_d / 2) ** 2
@@ -1002,7 +1002,7 @@ def main() -> None:
         # Quick validation: check if weight is compatible with diameter
         import numpy as np
         pi = np.pi
-        areal_density = config.simulation.areal_density_kg_per_m2
+        areal_density = config.simulation.reflector_areal_density_kg_per_m2
         min_possible_weight_g = pi * (diameter_range[0] / 2) ** 2 * areal_density * 1000
 
         if min_possible_weight_g > max_payload:
@@ -1235,7 +1235,7 @@ def main() -> None:
                     # Show constraint tightness
                     import numpy as np
                     pi = np.pi
-                    areal_density = config.simulation.areal_density_kg_per_m2
+                    areal_density = config.simulation.reflector_areal_density_kg_per_m2
                     max_possible_weight = (
                         pi
                         * (user_parameters["max_diameter_m"] / 2) ** 2

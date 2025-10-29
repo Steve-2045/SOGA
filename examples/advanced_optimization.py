@@ -81,7 +81,7 @@ def main():
 
     config = get_config()
     area = math.pi * (result.optimal_geometry.diameter / 2) ** 2
-    weight_kg = area * config.simulation.areal_density_kg_per_m2
+    weight_kg = area * config.simulation.reflector_areal_density_kg_per_m2
 
     print("Estimaciones Físicas:")
     print(f"  - Área efectiva: {area:.6f} m²")

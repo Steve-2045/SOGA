@@ -89,7 +89,7 @@ def main():
     config = get_config()
     diameter_m = result["optimal_diameter_mm"] / 1000.0
     area_m2 = math.pi * (diameter_m / 2) ** 2
-    estimated_weight_kg = area_m2 * config.simulation.areal_density_kg_per_m2
+    estimated_weight_kg = area_m2 * config.simulation.reflector_areal_density_kg_per_m2
     estimated_weight_g = estimated_weight_kg * 1000
 
     print("Estimaciones Adicionales:")
