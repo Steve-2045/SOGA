@@ -8,7 +8,9 @@ numpy>=2.0.0,<3.0.0
 scipy>=1.10.0,<2.0.0
 pymoo>=0.6.0,<0.7.0
 matplotlib>=3.7.0,<4.0.0
-toml>=0.10.2,<0.11.0
+# Note: toml was removed because we use tomllib (built-in Python 3.11+)
+# If support for Python < 3.11 is needed in the future, add:
+# tomli>=2.0.0,<3.0.0; python_version < "3.11"
 
 # Web interface (optional - required for dashboard)
 streamlit>=1.40.0,<2.0.0

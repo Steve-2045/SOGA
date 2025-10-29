@@ -9,10 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-try:
-    import tomllib  # Python 3.11+
-except ModuleNotFoundError:
-    import tomli as tomllib  # Fallback para Python < 3.11
+import tomllib  # Python 3.11+ (built-in)
 
 
 @dataclass

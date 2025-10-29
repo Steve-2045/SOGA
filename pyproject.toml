@@ -21,7 +21,9 @@ dependencies = [
     "scipy",
     "pymoo",
     "matplotlib",
-    "toml",
+    # tomllib is built-in for Python 3.11+
+    # tomli is only needed if we want to support Python < 3.11
+    # "tomli; python_version < '3.11'",
 ]
 
 [project.optional-dependencies]
