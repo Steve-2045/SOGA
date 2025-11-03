@@ -124,12 +124,35 @@ def create_pareto_front_plot(pareto_front: list, optimal_point: dict) -> go.Figu
     # Convert weights to grams for display
     weights_g = [w * 1000 for w in weights_kg]
 
-    # Optimal point weight in grams
-    optimal_weight_kg = (
-        optimal_point["optimal_diameter_mm"] / 1000
-    ) ** 2 * 3.14159 * 1.8 / 4  # Approximate
-    optimal_weight_g = optimal_weight_kg * 1000
+    # Find the knee point in the pareto front
+    # The knee point is the one that matches the optimal solution's diameter and f/D ratio
+    optimal_diameter_m = optimal_point["optimal_diameter_mm"] / 1000.0
+    optimal_fd = optimal_point["f_d_ratio"]
     optimal_gain = optimal_point["expected_gain_dbi"]
+
+    # Find the closest matching point in the Pareto front
+    # We need to find the closest match because the optimal values are rounded in the result dict
+    min_distance = float('inf')
+    knee_point = None
+
+    for point in pareto_front:
+        # Calculate Euclidean distance in (diameter, f_d, gain) space
+        # Normalize each dimension to make them comparable:
+        # - diameter in meters (scale ~0.1-1.0)
+        # - f/d ratio (scale ~0.3-0.7)
+        # - gain in dBi (scale ~10-25)
+        d_diff = (point.diameter - optimal_diameter_m) / optimal_diameter_m  # Relative difference
+        fd_diff = point.f_d_ratio - optimal_fd
+        g_diff = (point.gain - optimal_gain) / optimal_gain  # Relative difference
+
+        distance = (d_diff**2 + fd_diff**2 + g_diff**2)**0.5
+
+        if distance < min_distance:
+            min_distance = distance
+            knee_point = point
+
+    # Get the real weight from the knee point
+    optimal_weight_g = knee_point.weight * 1000  # Convert kg to g
 
     # Create hover text with detailed information
     hover_texts = [
