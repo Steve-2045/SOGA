@@ -18,7 +18,7 @@ REM Usage:
 REM   run_dashboard.bat
 REM
 REM Requirements:
-REM   - Python 3.9 or higher installed and in PATH
+REM   - Python 3.11 or higher installed and in PATH
 REM
 REM ============================================================================
 
@@ -40,7 +40,7 @@ if errorlevel 1 (
     echo ERROR: Python is not installed or not in PATH!
     echo ========================================================================
     echo.
-    echo Please install Python 3.9 or higher from:
+    echo Please install Python 3.11 or higher from:
     echo   https://www.python.org/downloads/
     echo.
     echo Make sure to check "Add Python to PATH" during installation.

@@ -214,7 +214,7 @@ logs/
 # Pre-commit hooks
 .pre-commit-config.yaml
 
-# Claude Code (keep local settings)
+# Editor local settings
 .claude/
 !.claude/commands/
 

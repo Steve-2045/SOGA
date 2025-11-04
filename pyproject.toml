@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-    {name = "Gemini", email = "gemini@google.com"},
+    {name = "Johan Stiven Avila Garcia", email = "jstivenavilag42@gmail.com"},
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

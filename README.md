@@ -52,7 +52,7 @@ El desafío principal es encontrar el **balance óptimo** entre ganancia (alcanc
 
 ## 💻 Requisitos
 
-- **Python**: 3.9 o superior
+- **Python**: 3.11 o superior
 - **Sistema Operativo**: Linux, macOS, Windows
 - **RAM**: 512 MB mínimo (2 GB recomendado para optimizaciones grandes)
 

@@ -18,7 +18,7 @@
 #   ./run_dashboard.sh
 #
 # Requirements:
-#   - Python 3.9 or higher installed
+#   - Python 3.11 or higher installed
 #
 ################################################################################
 
@@ -41,7 +41,7 @@ if ! command -v python3 &> /dev/null; then
     echo "ERROR: Python 3 is not installed!"
     echo "========================================================================"
     echo ""
-    echo "Please install Python 3.9 or higher:"
+    echo "Please install Python 3.11 or higher:"
     echo "  Ubuntu/Debian: sudo apt install python3 python3-venv python3-pip"
     echo "  Fedora/RHEL:   sudo dnf install python3 python3-pip"
     echo "  macOS:         brew install python3"

@@ -25,8 +25,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        "Get Help": "https://github.com/tu-repo/soga",
-        "Report a bug": "https://github.com/tu-repo/soga/issues",
+        "Get Help": "https://github.com/Steve-2045/SOGA",
+        "Report a bug": "https://github.com/Steve-2045/SOGA/issues",
         "About": "SOGA: Optimización de Antenas para Drones en Agricultura de Precisión",
     },
 )
@@ -102,7 +102,8 @@ def main() -> None:
         """
         <div style='text-align: center; color: #667eea;'>
             <p>SOGA v1.0 | Desarrollado con Streamlit y optimización evolutiva NSGA-II</p>
-            <p>📧 Contacto: soporte@soga.dev | 📄 Más información en "Acerca del Proyecto"</p>
+            <p>Para más información, consulta la documentación completa en la carpeta <code>docs/</code></p>
+            <p>GitHub: <a href="https://github.com/Steve-2045/SOGA" target="_blank">https://github.com/Steve-2045/SOGA</a></p>
         </div>
         """,
         unsafe_allow_html=True,
