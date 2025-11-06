@@ -633,7 +633,7 @@ def main() -> None:
         """
         <div style='text-align: center; color: #667eea;'>
             <p>Para más información, consulta la documentación completa en la carpeta <code>docs/</code></p>
-            <p>GitHub: <a href="https://github.com/tu-repo/soga" style="color: #667eea;">https://github.com/tu-repo/soga</a></p>
+            <p>GitHub: <a href="https://github.com/Steve-2045/SOGA" style="color: #667eea;">https://github.com/Steve-2045/SOGA</a></p>
         </div>
         """,
         unsafe_allow_html=True,
